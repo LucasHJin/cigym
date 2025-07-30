@@ -1,5 +1,6 @@
 import json
 import ffmpeg
+import math
 
 # FUNCTIONS -------------------------
 def convert_to_ass_time(seconds: float) -> str:
@@ -27,6 +28,7 @@ def make_ass(json_path, ass_path, resolution=(1024, 576)):
             Dialogue - the text to be displayed (can change effect here)
     '''
     
+    # GET AN AI TO DECIDE THE STYLING
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {resolution[0]}
@@ -37,6 +39,8 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,Arial,48,&H00FFFFFF,&H0000FFFF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,2,0,2,30,30,60,1
+Style: TitleBold,Futura,60,&H00FFD700,&H000000FF,&H00000000,&H64000000,-1,0,0,0,100,100,0,0,1,3,1,2,40,40,70,1
+Style: SoftSubtle,Segoe UI,40,&H66FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,0,2,20,20,50,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -44,17 +48,50 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
     # Add each of the subtitle lines
     subtitles = []
+    
     for segment in data['segments']:
         for word in segment['words']:
-            start = convert_to_ass_time(word['start'])
-            end = convert_to_ass_time(word['end'])
-            text = word['word'].strip()
-            line = f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}"
-            subtitles.append(line)
+            word_text = word['word'].strip()
+            start_time = word['start']
+            end_time = word['end']
+            duration = end_time - start_time
+            
+            # CHANGE TO NOT BE BASED ON DURATION BUT SOMETHING ELSE
+            if duration > 0.5:
+                styles = ["Default", "TitleBold", "SoftSubtle"]
+                switch_interval = 0.05 
+                flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval)
+            else:
+                normal_text(start_time, end_time, word_text, subtitles)
 
     # Write to the ASS file
     with open(ass_path, "w", encoding="utf-8") as f:
         f.write(header + "\n".join(subtitles))
+
+def normal_text(start_time, end_time, word_text, subtitles):
+    """Add the normal text for the subtitles."""
+    start = convert_to_ass_time(start_time)
+    end = convert_to_ass_time(end_time)
+    text = word_text.strip()
+    line = f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}"
+    subtitles.append(line)
+
+def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
+    """Add rapidly changing styles for subtitles."""
+    duration = end_time - start_time
+    num_chunks = math.ceil(duration / switch_interval)
+    actual_interval = duration / num_chunks
+
+    for i in range(num_chunks):
+        chunk_start = start_time + i * actual_interval
+        chunk_end = chunk_start + actual_interval
+        style = styles[i % len(styles)]
+
+        ass_start = convert_to_ass_time(chunk_start)
+        ass_end = convert_to_ass_time(min(chunk_end, end_time))
+
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{word_text}"
+        subtitles.append(line)
 
 # IMPLEMENTATION -------------------------
 # Create the ass file
