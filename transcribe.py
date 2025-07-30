@@ -1,5 +1,6 @@
 import whisper
 import json
+import string
 
 # FUNCTIONS -------------------------
 def split_segments(result, max_gap=0.2):
@@ -8,6 +9,7 @@ def split_segments(result, max_gap=0.2):
     Returns a new list of segments with id, start, end, text, and words.
     """
     new_segments = []
+    remove_punct = str.maketrans("", "", string.punctuation)
     
     # Go through each segment
     for segment in result["segments"]:
@@ -25,11 +27,13 @@ def split_segments(result, max_gap=0.2):
         for i in range(1, len(words)):
             prev_word = words[i-1]
             curr_word = words[i]
+            curr_word["word"] = curr_word["word"].translate(remove_punct)
             gap = curr_word["start"] - prev_word["end"]
 
             if gap > max_gap:
                 # If gap big enough, close off current subsegment
                 text = "".join(w["word"] for w in current_words).strip() # Get just words for the text
+                text = text.translate(remove_punct)
                 new_segments.append({
                     "id": len(new_segments),
                     "start": current_start,
@@ -48,6 +52,7 @@ def split_segments(result, max_gap=0.2):
         # Append final subsegment (hasn't been added because no gap to be checked)
         if current_words:
             text = "".join(w["word"] for w in current_words).strip()
+            text = text.translate(remove_punct)
             new_segments.append({
                 "id": len(new_segments),
                 "start": current_start,
