@@ -2,7 +2,7 @@ import whisper
 import json
 
 # FUNCTIONS -------------------------
-def split_segments_by_word_gaps(result, max_gap=0.2):
+def split_segments(result, max_gap=0.2):
     """
     Splits whisper segments into smaller segments based on gaps between individual words greater than max_gap.
     Returns a new list of segments with id, start, end, text, and words.
@@ -62,7 +62,7 @@ def split_segments_by_word_gaps(result, max_gap=0.2):
 model = whisper.load_model('small') # Use medium/large in actual thing
 result = model.transcribe('sample.MP4', language='en', word_timestamps=True)
 
-result["segments"] = split_segments_by_word_gaps(result, max_gap=0.2)
+result["segments"] = split_segments(result, max_gap=0.2)
 
 with open("transcript.json", "w") as f: # json over srt because more precision
     json.dump(result, f, indent=2)

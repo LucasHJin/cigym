@@ -1,0 +1,1 @@
+# Take video and add words with their timestamp and erase when segment ends
