@@ -3,6 +3,8 @@ import json
 import string
 # from client import client
 
+# ALSO GET THE SOUND AND MAP IT TO THE VIDEO
+
 # FUNCTIONS -------------------------
 """
 def check_importance(words):
@@ -109,7 +111,7 @@ def split_segments(result, max_gap=0.2):
 
 # IMPLEMENTATION -------------------------
 model = whisper.load_model('small') # Use medium/large in actual thing
-result = model.transcribe('sample.MP4', language='en', word_timestamps=True)
+result = model.transcribe('audio.MP4', language='en', word_timestamps=True)
 
 result["segments"] = split_segments(result, max_gap=0.2)
 

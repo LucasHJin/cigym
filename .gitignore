@@ -1,5 +1,7 @@
 transcript.json
-sample.MP4
-output_sample.mp4
 subtitles.ass
 .env
+audio.mp4
+output_final.mp4
+test.mp4
+video_with_audio.mp4

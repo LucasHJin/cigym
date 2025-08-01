@@ -38,8 +38,8 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Didot,100,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Default-Red,Didot,100,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Default,Didot,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Default-Red,Didot,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -95,12 +95,22 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_inte
         line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{word_text}"
         subtitles.append(line)
 
+def burn_subtitles(input, output, subtitles):
+    ffmpeg.input(input).output(output, vf=f"ass={subtitles}", acodec='copy').global_args('-y').run()
+
+def combine_video_audio(video_input, audio_input, output):
+    video = ffmpeg.input(video_input)
+    audio = ffmpeg.input(audio_input)
+
+    ffmpeg.output(video.video, audio.audio, output, vcodec='copy', acodec='aac', shortest=None).global_args('-y').run()
+    
+
 # IMPLEMENTATION -------------------------
 # Create the ass file
 make_ass("transcript.json", "subtitles.ass", resolution=(1024, 576))
 
-# Burn ass subtitles onto the video
-input = "sample.MP4"
-ouput = "output_sample.mp4"
-subtitles = "subtitles.ass"
-ffmpeg.input(input).output(ouput, vf=f"ass={subtitles}", **{'c:a': 'copy'}).run()
+# Add audio to the video
+combine_video_audio("test.mp4", "audio.mp4", "video_with_audio.mp4")
+
+# Add subtitles to the video
+burn_subtitles("video_with_audio.mp4", "output_final.mp4", "subtitles.ass")
