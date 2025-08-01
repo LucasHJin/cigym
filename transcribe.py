@@ -62,6 +62,7 @@ def split_segments(result, max_gap=0.2):
             new_segments.append(segment)
             continue
 
+        words[0]["word"] = words[0]["word"].translate(remove_punct).strip().upper()
         current_words = [words[0]]
         current_start = words[0]["start"]
         current_end = words[0]["end"]
@@ -70,12 +71,12 @@ def split_segments(result, max_gap=0.2):
         for i in range(1, len(words)):
             prev_word = words[i-1]
             curr_word = words[i]
-            curr_word["word"] = curr_word["word"].translate(remove_punct)
+            curr_word["word"] = curr_word["word"].translate(remove_punct).strip().upper()
             gap = curr_word["start"] - prev_word["end"]
 
             if gap > max_gap:
                 # If gap big enough, close off current subsegment
-                text = "".join(w["word"] for w in current_words).strip() # Get just words for the text
+                text = " ".join(w["word"].upper() for w in current_words).strip() # Get just words for the text
                 text = text.translate(remove_punct)
                 new_segments.append({
                     "id": len(new_segments),
