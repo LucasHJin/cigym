@@ -40,6 +40,24 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,Didot,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 Style: Default-Red,Didot,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Default-Bold,Didot Bold,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Default-Bold-Red,Didot Bold,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Fancy,Academy Engraved Let,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,110,0,0,1,0,0,5,30,30,60,1
+Style: Fancy-Red,Academy Engraved Let,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,110,0,0,1,0,0,5,30,30,60,1
+Style: Messy,Bradley Hand,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,110,100,0,0,1,0,0,5,30,30,60,1
+Style: Messy-Red,Bradley Hand,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,110,100,0,0,1,0,0,5,30,30,60,1
+Style: Crazy,Chalkduster,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Crazy-Red,Chalkduster,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Clean,Din Condensed,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Clean-Red,Din Condensed,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Heavy,Impact,100,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Heavy-Red,Impact,100,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Notes,Noteworthy,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Notes-Red,Noteworthy,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Wild,Zapfino,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Wild-Red,Zapfino,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Sad,Trattatello,70,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+Style: Sad-Red,Trattatello,70,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -60,8 +78,25 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 styles = [
                     "Default",
                     "Default-Red",
+                    "Default-Bold-Red",
+                    "Fancy",
+                    "Fancy-Red",
+                    "Messy",
+                    "Messy-Red",
+                    "Clean",
+                    "Clean-Red",
+                    "Crazy",
+                    "Crazy-Red",
+                    "Heavy",
+                    "Heavy-Red",
+                    "Notes",
+                    "Notes-Red",
+                    "Wild",
+                    "Wild-Red",
+                    "Sad",
+                    "Sad-Red"
                 ]
-                switch_interval = 0.04 
+                switch_interval = 0.05 
                 flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval)
             else:
                 normal_text(start_time, end_time, word_text, subtitles)
