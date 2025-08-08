@@ -40,6 +40,7 @@ ScaledBorderAndShadow: yes
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Default,Didot,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 Style: Default-Red,Didot,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
+Style: Default-Red-Transparent,Didot,80,&H800000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 Style: Default-Bold,Didot Bold,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 Style: Default-Bold-Red,Didot Bold,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
 Style: Fancy,Academy Engraved Let,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,110,0,0,1,0,0,5,30,30,60,1
@@ -110,7 +111,7 @@ def normal_text(start_time, end_time, word_text, subtitles):
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}"
+    line = f"Dialogue: 0,{start},{end},Default-Red-Transparent,,0,0,0,,{text}"
     subtitles.append(line)
 
 def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
