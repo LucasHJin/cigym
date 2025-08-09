@@ -142,11 +142,11 @@ def combine_video_audio(video_input, audio_input, output):
     
 
 # IMPLEMENTATION -------------------------
-# Create the ass file
+'''# Create the ass file
 make_ass("transcript.json", "subtitles.ass", resolution=(1024, 576))
 
 # Add audio to the video
 combine_video_audio("test.mp4", "audio.mp4", "video_with_audio.mp4")
 
 # Add subtitles to the video
-burn_subtitles("video_with_audio.mp4", "output_final.mp4", "subtitles.ass")
+burn_subtitles("video_with_audio.mp4", "output_final.mp4", "subtitles.ass")'''

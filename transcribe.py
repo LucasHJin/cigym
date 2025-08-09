@@ -109,11 +109,12 @@ def split_segments(result, max_gap=0.2):
 
     return new_segments
 
+def transcribe_audio(file_path):
+    model = whisper.load_model('small')
+    result = model.transcribe(file_path, language='en', word_timestamps=True)
+    result["segments"] = split_segments(result, max_gap=0.2)
+    with open("transcript.json", "w") as f: # json over srt because more precision
+        json.dump(result, f, indent=2)
+
 # IMPLEMENTATION -------------------------
-model = whisper.load_model('small') # Use medium/large in actual thing
-result = model.transcribe('audio.MP4', language='en', word_timestamps=True)
-
-result["segments"] = split_segments(result, max_gap=0.2)
-
-with open("transcript.json", "w") as f: # json over srt because more precision
-    json.dump(result, f, indent=2)
+#transcribe_audio('audio.MP4')

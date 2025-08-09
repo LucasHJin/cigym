@@ -1,8 +1,9 @@
 transcript.json
 subtitles.ass
 .env
+
 audio.mp4
-output_final.mp4
 test.mp4
-video_with_audio.mp4
-cutout.mov
+output_subtitles.mp4
+output_with_cutout.mp4
+output_final.mp4
