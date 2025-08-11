@@ -93,6 +93,10 @@ def add_foreground_to_background(input_video, background_video, output_video):
         # Convert model's RGB output to BGR to match OpenCV
         fgr_bgr = cv2.cvtColor(fgr_np, cv2.COLOR_RGB2BGR)
 
+        # Resize background to match foreground
+        if frame_bg.shape[:2] != frame_fg.shape[:2]:
+            frame_bg = cv2.resize(frame_bg, (frame_fg.shape[1], frame_fg.shape[0]))
+
         # Combine foreground and background
         composite = (alpha_3c * fgr_bgr.astype(np.float32) + (1 - alpha_3c) * frame_bg.astype(np.float32)).astype(np.uint8)
 
