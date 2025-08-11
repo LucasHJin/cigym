@@ -14,7 +14,7 @@ def make_vhs(input_file, output_file):
             "scale=iw*0.9:ih*0.9:flags=bicubic, "
             "chromashift=cbh=3:crh=-3, "
             "eq=contrast=1.1:brightness=-0.15:saturation=0.85:gamma=0.8, "
-            "hue=h=45:s=0.8, "
+            "hue=h=10:s=0.8, "
             "noise=alls=45:allf=t+u, "
             "vignette, "
             "unsharp=5:5:0.8:3:3:0"

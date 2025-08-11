@@ -1,6 +1,39 @@
 import json
 import ffmpeg
 import math
+import random
+
+# CHANGE LIST TO BE RIGHT
+FONTS = [
+    {"font": "American Typewriter", "styles": ["Condensed Light", "Condensed", "Condensed Bold", "Light", "Regular", "Bold"], "type": "serif"},
+    {"font": "Apple Chancery", "styles": ["Regular"], "type": "script"},
+    {"font": "Baskerville", "styles": ["Regular", "Italic", "Semi-bold", "Semi-bold Italic", "Bold", "Bold Italic"], "type": "serif"},
+    {"font": "Brush Script", "styles": ["Italic"], "type": "script"},
+    {"font": "Chalkboard", "styles": ["Regular", "Bold"], "type": "display"},
+    {"font": "Chalkduster", "styles": ["Regular"], "type": "display"},
+    {"font": "Cochin", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
+    {"font": "Comic Sans", "styles": ["Regular", "Bold"], "type": "display"},
+    {"font": "Cooper", "styles": ["Black"], "type": "display"},
+    {"font": "Copperplate", "styles": ["Light", "Regular", "Bold"], "type": "display"},
+    {"font": "Didot", "styles": ["Regular", "Italic", "Bold"], "type": "serif"},
+    {"font": "Herculanum", "styles": ["Regular"], "type": "display"},
+    {"font": "Hoefler Text", "styles": ["Regular", "Italic", "Black", "Black Italic", "Ornaments"], "type": "serif"},
+    {"font": "Impact", "styles": ["Regular"], "type": "display"},
+    {"font": "Kuenstler Script", "styles": ["Regular", "Black"], "type": "script"},
+    {"font": "Marker Felt", "styles": ["Thin", "Wide"], "type": "display"},
+    {"font": "Optima", "styles": ["Regular", "Italic", "Bold", "Bold Italic", "Extra Black"], "type": "display"},
+    {"font": "Palatino", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
+    {"font": "Papyrus", "styles": ["Regular", "Condensed"], "type": "display"},
+    {"font": "Plantagenet Cherokee", "styles": ["Regular"], "type": "display"},
+    {"font": "Skia", "styles": ["Light", "Light Condensed", "Light Extended", "Regular", "Condensed", "Extended", "Bold", "Black", "Black Condensed", "Black Extended"], "type": "display"},
+    {"font": "Snell Roundhand", "styles": ["Regular"], "type": "script"},
+    {"font": "Techno", "styles": ["Regular"], "type": "display"},
+    {"font": "Textile", "styles": ["Regular"], "type": "display"},
+    {"font": "Times", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
+    {"font": "Times New Roman", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
+    {"font": "Zapf Chancery", "styles": ["Medium Italic"], "type": "script"},
+    {"font": "Zapfino", "styles": ["Regular"], "type": "script"},
+]
 
 # FUNCTIONS -------------------------
 def convert_to_ass_time(seconds: float) -> str:
@@ -16,19 +49,6 @@ def make_ass(json_path, ass_path, resolution=(1024, 576)):
     with open(json_path) as f:
         data = json.load(f)
 
-    # Header
-    '''
-    HEADER SECTIONS:
-        Script Info - metadata and global settings
-        V4+ Styles - defines styles (subtitle appearances)
-            Format - defines what is required for each style
-            I.e. a Default style (can choose which one to call in events section)
-        Events - actual timed subtitles
-            Format - defines what is required for each subtitle
-            Dialogue - the text to be displayed (can change effect here)
-    '''
-    
-    # GET AN AI TO DECIDE THE STYLING
     header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: {resolution[0]}
@@ -38,35 +58,47 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Didot,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Default-Red,Didot,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Default-Red-Transparent,Didot,80,&H800000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Default-Bold,Didot Bold,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Default-Bold-Red,Didot Bold,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,120,0,0,1,0,0,5,30,30,60,1
-Style: Fancy,Academy Engraved Let,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,110,0,0,1,0,0,5,30,30,60,1
-Style: Fancy-Red,Academy Engraved Let,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,110,0,0,1,0,0,5,30,30,60,1
-Style: Messy,Bradley Hand,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,110,100,0,0,1,0,0,5,30,30,60,1
-Style: Messy-Red,Bradley Hand,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,110,100,0,0,1,0,0,5,30,30,60,1
-Style: Crazy,Chalkduster,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Crazy-Red,Chalkduster,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Clean,Din Condensed,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Clean-Red,Din Condensed,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Heavy,Impact,100,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Heavy-Red,Impact,100,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Notes,Noteworthy,80,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Notes-Red,Noteworthy,80,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Wild,Zapfino,90,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Wild-Red,Zapfino,90,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Sad,Trattatello,70,&H00FFFFFF,&H0000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
-Style: Sad-Red,Trattatello,70,&H0000FF,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,30,30,60,1
+"""
 
+    # Generate style entries from FONTS
+    style_template = "Style: {name},{fontname},100,{primary},{secondary},{outline},{back},0,0,0,0,100,120,0,0,0,0,0,5,30,30,60,1\n"
+    primary_white = "&H00FFFFFF" # White
+    primary_red = "&H000000FF" # Red (BGR)
+    secondary = "&H00000000"
+    outline = "&H00000000"
+    back = "&H00000000"
+
+    styles_text = ""
+    for font in FONTS:
+        fontname = font["font"]
+        # White style
+        style_name_white = fontname
+        styles_text += style_template.format(
+            name=style_name_white,
+            fontname=fontname,
+            primary=primary_white,
+            secondary=secondary,
+            outline=outline,
+            back=back,
+        )
+        # Red style
+        style_name_red = f"{fontname} Red"
+        styles_text += style_template.format(
+            name=style_name_red,
+            fontname=fontname,
+            primary=primary_red,
+            secondary=secondary,
+            outline=outline,
+            back=back,
+        )
+
+    header += styles_text
+    header += """
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
-
-    # Add each of the subtitle lines
     subtitles = []
-    
+
     for segment in data['segments']:
         for word in segment['words']:
             word_text = word['word'].strip()
@@ -75,30 +107,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             duration = end_time - start_time
             
             # CHANGE TO NOT BE BASED ON DURATION BUT SOMETHING ELSE
-            if duration > 0.5:
-                styles = [
-                    "Default",
-                    "Default-Red",
-                    "Default-Bold-Red",
-                    "Fancy",
-                    "Fancy-Red",
-                    "Messy",
-                    "Messy-Red",
-                    "Clean",
-                    "Clean-Red",
-                    "Crazy",
-                    "Crazy-Red",
-                    "Heavy",
-                    "Heavy-Red",
-                    "Notes",
-                    "Notes-Red",
-                    "Wild",
-                    "Wild-Red",
-                    "Sad",
-                    "Sad-Red"
-                ]
-                switch_interval = 0.05 
-                flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval)
+            if duration > 0.8:
+                switch_interval = 0.08
+                flicker_text(start_time, end_time, word_text, subtitles, FONTS, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
             else:
                 normal_text(start_time, end_time, word_text, subtitles)
 
@@ -111,19 +122,25 @@ def normal_text(start_time, end_time, word_text, subtitles):
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},Default-Red-Transparent,,0,0,0,,{text}"
+    line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{text}"
     subtitles.append(line)
 
-def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
+def flicker_text(start_time, end_time, word_text, subtitles, fonts, switch_interval=0.05):
     """Add rapidly changing styles for subtitles."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
     actual_interval = duration / num_chunks
 
+    style_names = []
+    for font in fonts:
+        style_names.append(font["font"])
+        style_names.append(f"{font['font']} Red")
+
     for i in range(num_chunks):
         chunk_start = start_time + i * actual_interval
         chunk_end = chunk_start + actual_interval
-        style = styles[i % len(styles)]
+
+        style = random.choice(style_names)
 
         ass_start = convert_to_ass_time(chunk_start)
         ass_end = convert_to_ass_time(min(chunk_end, end_time))
