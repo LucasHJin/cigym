@@ -5,34 +5,46 @@ import random
 
 # CHANGE LIST TO BE RIGHT
 FONTS = [
-    {"font": "American Typewriter", "styles": ["Condensed Light", "Condensed", "Condensed Bold", "Light", "Regular", "Bold"], "type": "serif"},
-    {"font": "Apple Chancery", "styles": ["Regular"], "type": "script"},
-    {"font": "Baskerville", "styles": ["Regular", "Italic", "Semi-bold", "Semi-bold Italic", "Bold", "Bold Italic"], "type": "serif"},
-    {"font": "Brush Script", "styles": ["Italic"], "type": "script"},
-    {"font": "Chalkboard", "styles": ["Regular", "Bold"], "type": "display"},
-    {"font": "Chalkduster", "styles": ["Regular"], "type": "display"},
-    {"font": "Cochin", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
-    {"font": "Comic Sans", "styles": ["Regular", "Bold"], "type": "display"},
-    {"font": "Cooper", "styles": ["Black"], "type": "display"},
-    {"font": "Copperplate", "styles": ["Light", "Regular", "Bold"], "type": "display"},
-    {"font": "Didot", "styles": ["Regular", "Italic", "Bold"], "type": "serif"},
-    {"font": "Herculanum", "styles": ["Regular"], "type": "display"},
-    {"font": "Hoefler Text", "styles": ["Regular", "Italic", "Black", "Black Italic", "Ornaments"], "type": "serif"},
-    {"font": "Impact", "styles": ["Regular"], "type": "display"},
-    {"font": "Kuenstler Script", "styles": ["Regular", "Black"], "type": "script"},
-    {"font": "Marker Felt", "styles": ["Thin", "Wide"], "type": "display"},
-    {"font": "Optima", "styles": ["Regular", "Italic", "Bold", "Bold Italic", "Extra Black"], "type": "display"},
-    {"font": "Palatino", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
-    {"font": "Papyrus", "styles": ["Regular", "Condensed"], "type": "display"},
-    {"font": "Plantagenet Cherokee", "styles": ["Regular"], "type": "display"},
-    {"font": "Skia", "styles": ["Light", "Light Condensed", "Light Extended", "Regular", "Condensed", "Extended", "Bold", "Black", "Black Condensed", "Black Extended"], "type": "display"},
-    {"font": "Snell Roundhand", "styles": ["Regular"], "type": "script"},
-    {"font": "Techno", "styles": ["Regular"], "type": "display"},
-    {"font": "Textile", "styles": ["Regular"], "type": "display"},
-    {"font": "Times", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
-    {"font": "Times New Roman", "styles": ["Regular", "Italic", "Bold", "Bold Italic"], "type": "serif"},
-    {"font": "Zapf Chancery", "styles": ["Medium Italic"], "type": "script"},
-    {"font": "Zapfino", "styles": ["Regular"], "type": "script"},
+    {"font": "Academy Engraved LET", "styles": [""]},
+    {"font": "American Typewriter", "styles": ["", "Light", "Semibold", "Condensed Light", "Condensed", "Condensed Bold"]},
+    {"font": "Annai MN", "styles": [""]},
+    {"font": "Apple Chancery", "styles": [""]},
+    {"font": "Baskerville", "styles": ["", "Italic", "SemiBold Italic"]},
+    {"font": "Big Casion", "styles": [""]},
+    {"font": "Bodoni 72", "styles": ["", "Book", "Book Italic", "Bold"]},
+    {"font": "Bradley Hand", "styles": [""]},
+    {"font": "Brill", "styles": ["", "Italic"]},
+    {"font": "Brush Script MT", "styles": [""]},
+    {"font": "Canela", "styles": ["", "Regular Italic"]},
+    {"font": "Chalkduster", "styles": [""]},
+    {"font": "Charter", "styles": ["", "Italic", "Black"]},
+    {"font": "Cochin", "styles": ["", "Italic"]},
+    {"font": "Copperplate", "styles": ["", "Light", "Bold"]},
+    {"font": "Courier New", "styles": ["", "Italic"]},
+    {"font": "Didot", "styles": ["", "Italic"]},
+    {"font": "DIN Condensed", "styles": ["", "Italic"]},
+    {"font": "Domaine Display", "styles": ["", "Regular Italic"]},
+    {"font": "Herculanum", "styles": [""]},
+    {"font": "Hoefler Text", "styles": ["", "Italic"]},
+    {"font": "Impact", "styles": [""]},
+    {"font": "Luminari", "styles": [""]},
+    {"font": "Marker Felt", "styles": ["", "Wide"]},
+    {"font": "Noteworthy", "styles": ["", "Bold"]},
+    {"font": "Optima", "styles": ["", "Italic", "Bold"]},
+    {"font": "Palatino", "styles": [""]},
+    {"font": "Papyrus", "styles": ["", "Condensed"]},
+    {"font": "Party LET", "styles": [""]},
+    {"font": "Phosphate", "styles": ["", "Inline"]},
+    {"font": "Quotes Caps", "styles": [""]},
+    {"font": "Quotes Script", "styles": [""]},
+    {"font": "Rockwell", "styles": [""]},
+    {"font": "Sauber Script", "styles": [""]},
+    {"font": "Savoye LET", "styles": [""]},
+    {"font": "SignPainter", "styles": [""]},
+    {"font": "Skia", "styles": ["", "Light", "Bold", "Light Condensed", "Condensed", "Light Extended", "Extended"]},
+    {"font": "Snell Roundhand", "styles": [""]},
+    {"font": "Trattatello", "styles": [""]},
+    {"font": "Zapfino", "styles": [""]},
 ]
 
 # FUNCTIONS -------------------------
@@ -44,7 +56,7 @@ def convert_to_ass_time(seconds: float) -> str:
     cs = int((seconds - int(seconds)) * 100)
     return f"{h}:{m:02}:{s:02}.{cs:02}"
 
-def make_ass(json_path, ass_path, resolution=(1024, 576)):
+def make_ass(json_path, ass_path, resolution=(2160, 3840)):
     """Create ASS file with timestamps and settings."""
     with open(json_path) as f:
         data = json.load(f)
@@ -61,7 +73,7 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 """
 
     # Generate style entries from FONTS
-    style_template = "Style: {name},{fontname},100,{primary},{secondary},{outline},{back},0,0,0,0,100,120,0,0,0,0,0,5,30,30,60,1\n"
+    style_template = "Style: {name},{fontname},450,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,60,1\n"
     primary_white = "&H00FFFFFF" # White
     primary_red = "&H000000FF" # Red (BGR)
     secondary = "&H00000000"
@@ -69,28 +81,36 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
     back = "&H00000000"
 
     styles_text = ""
+
     for font in FONTS:
-        fontname = font["font"]
-        # White style
-        style_name_white = fontname
-        styles_text += style_template.format(
-            name=style_name_white,
-            fontname=fontname,
-            primary=primary_white,
-            secondary=secondary,
-            outline=outline,
-            back=back,
-        )
-        # Red style
-        style_name_red = f"{fontname} Red"
-        styles_text += style_template.format(
-            name=style_name_red,
-            fontname=fontname,
-            primary=primary_red,
-            secondary=secondary,
-            outline=outline,
-            back=back,
-        )
+        base_fontname = font["font"]
+        styles = font.get("styles", [""])
+
+        for style_suffix in styles:
+            full_fontname = base_fontname
+            if style_suffix.strip():
+                full_fontname += " " + style_suffix
+
+            # White style
+            style_name_white = full_fontname
+            styles_text += style_template.format(
+                name=style_name_white,
+                fontname=full_fontname,
+                primary=primary_white,
+                secondary=secondary,
+                outline=outline,
+                back=back,
+            )
+            # Red style
+            style_name_red = f"{full_fontname} Red"
+            styles_text += style_template.format(
+                name=style_name_red,
+                fontname=full_fontname,
+                primary=primary_red,
+                secondary=secondary,
+                outline=outline,
+                back=back,
+            )
 
     header += styles_text
     header += """
@@ -107,11 +127,12 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             duration = end_time - start_time
             
             # CHANGE TO NOT BE BASED ON DURATION BUT SOMETHING ELSE
-            if duration > 0.8:
+            """if duration > 0.8:
                 switch_interval = 0.08
                 flicker_text(start_time, end_time, word_text, subtitles, FONTS, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
             else:
-                normal_text(start_time, end_time, word_text, subtitles)
+                normal_text(start_time, end_time, word_text, subtitles)"""
+            normal_text(start_time, end_time, word_text, subtitles)
 
     # Write to the ASS file
     with open(ass_path, "w", encoding="utf-8") as f:
@@ -122,7 +143,7 @@ def normal_text(start_time, end_time, word_text, subtitles):
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{text}"
+    line = f"Dialogue: 0,{start},{end},A,,0,0,0,,{text}"
     subtitles.append(line)
 
 def flicker_text(start_time, end_time, word_text, subtitles, fonts, switch_interval=0.05):
@@ -149,7 +170,7 @@ def flicker_text(start_time, end_time, word_text, subtitles, fonts, switch_inter
         subtitles.append(line)
 
 def burn_subtitles(input, output, subtitles):
-    ffmpeg.input(input).output(output, vf=f"ass={subtitles}", acodec='copy').global_args('-y').run()
+    ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", acodec='copy').global_args('-y').run()
 
 def combine_video_audio(video_input, audio_input, output):
     video = ffmpeg.input(video_input)

@@ -3,29 +3,31 @@ import cv2
 import numpy as np
 import random
 
-def make_vhs(input_file, output_file):
-    # Lowers resolution, lowers brightness, increases contrast, unsaturated, increase shadows, add noise/grain, keep focus on person (still semi-sharp)
+# Make it shake + blue hue
+
+def make_cinematic(input_file, output_file):
     ffmpeg_cmd = [
         "ffmpeg",
         "-y",
         "-i", input_file,
         "-vf",
         (
-            "scale=iw*0.9:ih*0.9:flags=bicubic, "
-            "chromashift=cbh=3:crh=-3, "
-            "eq=contrast=1.1:brightness=-0.15:saturation=0.85:gamma=0.8, "
-            "hue=h=10:s=0.8, "
-            "noise=alls=45:allf=t+u, "
-            "vignette, "
-            "unsharp=5:5:0.8:3:3:0"
+            "scale=iw*0.95:ih*0.95:flags=bicubic,"
+            "eq=contrast=1.3:brightness=-0.25:saturation=0.69:gamma=0.83,"
+            "colorchannelmixer="
+                "rr=0.88:rg=0:rb=0.12:"
+                "gr=0:gg=0.78:gb=0.22:"
+                "br=0.05:bg=0.15:bb=1.25,"
+            "vignette,"
+            "unsharp=luma_msize_x=5:luma_msize_y=5:luma_amount=1.0"
         ),
         "-c:v", "libx264",
-        "-crf", "21",
+        "-crf", "20",
         "-preset", "slow",
         output_file
     ]
-    subprocess.run(ffmpeg_cmd)
-    
+    subprocess.run(ffmpeg_cmd, check=True)
+
 def add_scanlines_and_glitches(input_file, output_file):
     # Open the video file
     cap = cv2.VideoCapture(input_file)
