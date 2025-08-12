@@ -147,4 +147,4 @@ def transcribe_audio(file_path):
 
 # IMPLEMENTATION -------------------------
 #transcribe_audio('audio.MP4')
-assign_importance("transcript.json")
+#assign_importance("transcript.json")

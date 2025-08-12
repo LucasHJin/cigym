@@ -13,9 +13,9 @@ combine_video_audio("output_with_cutout.mp4", "audio.mp4", "output_final.mp4")""
 # Testing adjustments
 #make_vhs("test.mp4", "output_vhs.mp4")
 #add_scanlines_and_glitches("output_vhs.mp4", "output_vhs_2.mp4")
-#transcribe_audio('audio2.MP4')
-make_ass("transcript.json", "subtitles.ass")
-burn_subtitles("output_vhs.mp4", "output_subtitles.mp4", "subtitles.ass")
-#combine_video_audio("output_subtitles.mp4", "audio2.MP4", "output_final.mp4")
 
 #make_cinematic("test.mp4", "output_vhs.mp4")
+#transcribe_audio('audio2.MP4')
+make_ass("transcript_processed.json", "subtitles.ass")
+burn_subtitles("output_vhs.mp4", "output_subtitles.mp4", "subtitles.ass")
+combine_video_audio("output_subtitles.mp4", "audio.MP4", "output_final.mp4")

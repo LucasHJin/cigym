@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import random
 
-# Make it shake + blue hue
+# Now cut clips
 
 def make_cinematic(input_file, output_file):
     ffmpeg_cmd = [

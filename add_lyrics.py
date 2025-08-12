@@ -129,12 +129,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             word_text = word['word'].strip()
             start_time = word['start']
             end_time = word['end']
-            duration = end_time - start_time
-            
-            # CHANGE TO NOT BE BASED ON DURATION BUT SOMETHING ELSE
-            if duration > 2.0:
+            importance = word['importance']
+
+            if importance == 2:
                 switch_interval = 0.05
                 flicker_text(start_time, end_time, word_text, subtitles, ass_styles, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
+            elif importance == 1:
+                red_text(start_time, end_time, word_text, subtitles)
             else:
                 normal_text(start_time, end_time, word_text, subtitles)
 
@@ -148,6 +149,14 @@ def normal_text(start_time, end_time, word_text, subtitles):
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
     line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{text}"
+    subtitles.append(line)
+    
+def red_text(start_time, end_time, word_text, subtitles):
+    """Add the red text for the subtitles."""
+    start = convert_to_ass_time(start_time)
+    end = convert_to_ass_time(end_time)
+    text = word_text.strip()
+    line = f"Dialogue: 0,{start},{end},Didot Red,,0,0,0,,{text}"
     subtitles.append(line)
 
 def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
