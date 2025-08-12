@@ -4,9 +4,78 @@ import string
 from client import client
 
 # FUNCTIONS -------------------------
+# Note -> can't just tell it to return JSON with added importance because it hallucinates words
+def assign_importance(transcript):
+    """Send transcript JSON to Gemini API and get importance scoring per word as a patch."""
+    
+    with open(transcript, "r", encoding="utf-8") as f:
+        input_json = json.load(f)
+    
+    prompt = f"""
+You are given a transcription JSON of a song or spoken phrase.
+Your task:
+1. For each word, assign an "importance" score (considering both the factors listed below in part 2 and the fact that these are lyrics appearing on screen so there shouldn't be too many marked as important):
+   - 0 = normal word, not worth highlighting (the majority of words should be 0).
+   - 1 = slightly important word - this will highlight the text a different color.
+   - 2 = very important word - this will make the text rapidly change fonts (keep it scarce, around 0-2 per segment).
+2. Importance is based on:
+   - The word's emotional or semantic weight.
+   - Its role in emphasis.
+   - The length of time spoken (less important).
+3. DO NOT change, remove, or reorder any existing text, numbers, or structure.
+4. OUTPUT ONLY a JSON array of objects with:
+   - "segment_id": the segment's id
+   - "word_index": the index of the word within the segment's "words" list
+   - "importance": the assigned importance score (0, 1, or 2)
+5. DO NOT output any explanations, markdown, or extra text.
 
-#def mark_important(words):
+Input JSON:
+{json.dumps(input_json, indent=2)}
+"""
+    # Query the API
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=prompt
+    )
+    
+    # Get output
+    output_text = ""
+    if response.candidates and response.candidates[0].content:
+        parts = getattr(response.candidates[0].content, "parts", [])
+        for part in parts:
+            if hasattr(part, "text") and part.text:
+                output_text += part.text.strip() + "\n"
+    if not output_text.strip():
+        raise ValueError("Gemini response contained no text output.")
 
+    # Remove markdown ticks if there are any
+    if output_text.strip().startswith("```"):
+        output_text = "\n".join(
+            line for line in output_text.splitlines()
+            if not line.strip().startswith("```")
+        )
+
+    # Parse the output to json
+    try:
+        patch = json.loads(output_text)
+    except json.JSONDecodeError as e:
+        print("=== Gemini raw output ===")
+        print(output_text)
+        print("=========================")
+        raise ValueError("Failed to parse Gemini's response into JSON") from e
+
+    # Add importance to each word in the original json
+    for entry in patch:
+        segment_id = entry["segment_id"]
+        word_index = entry["word_index"]
+        importance = entry["importance"]
+        input_json["segments"][segment_id]["words"][word_index]["importance"] = importance
+
+    # Save updated JSON
+    with open("transcript_processed.json", "w", encoding="utf-8") as f:
+        json.dump(input_json, f, indent=2, ensure_ascii=False)
+
+    print("Finished marking importance")
 
 def split_segments(result, max_gap=0.2):
     """
@@ -78,3 +147,4 @@ def transcribe_audio(file_path):
 
 # IMPLEMENTATION -------------------------
 #transcribe_audio('audio.MP4')
+assign_importance("transcript.json")
