@@ -10,20 +10,20 @@ FONTS = [
     {"font": "Annai MN", "styles": [""]},
     {"font": "Apple Chancery", "styles": [""]},
     {"font": "Baskerville", "styles": ["", "Italic", "SemiBold Italic"]},
-    {"font": "Big Casion", "styles": [""]},
+    {"font": "Big Caslon", "styles": [""]},
     {"font": "Bodoni 72", "styles": ["", "Book", "Book Italic", "Bold"]},
     {"font": "Bradley Hand", "styles": [""]},
     {"font": "Brill", "styles": ["", "Italic"]},
     {"font": "Brush Script MT", "styles": [""]},
-    {"font": "Canela", "styles": ["", "Regular Italic"]},
+    {"font": "Canela", "styles": [""]},
     {"font": "Chalkduster", "styles": [""]},
     {"font": "Charter", "styles": ["", "Italic", "Black"]},
     {"font": "Cochin", "styles": ["", "Italic"]},
     {"font": "Copperplate", "styles": ["", "Light", "Bold"]},
     {"font": "Courier New", "styles": ["", "Italic"]},
     {"font": "Didot", "styles": ["", "Italic"]},
-    {"font": "DIN Condensed", "styles": ["", "Italic"]},
-    {"font": "Domaine Display", "styles": ["", "Regular Italic"]},
+    {"font": "DIN Condensed", "styles": [""]},
+    {"font": "Domaine Display", "styles": [""]},
     {"font": "Herculanum", "styles": [""]},
     {"font": "Hoefler Text", "styles": ["", "Italic"]},
     {"font": "Impact", "styles": [""]},
@@ -32,7 +32,7 @@ FONTS = [
     {"font": "Noteworthy", "styles": ["", "Bold"]},
     {"font": "Optima", "styles": ["", "Italic", "Bold"]},
     {"font": "Palatino", "styles": [""]},
-    {"font": "Papyrus", "styles": ["", "Condensed"]},
+    {"font": "Papyrus", "styles": [""]},
     {"font": "Party LET", "styles": [""]},
     {"font": "Phosphate", "styles": ["", "Inline"]},
     {"font": "Quotes Caps", "styles": [""]},
@@ -41,11 +41,13 @@ FONTS = [
     {"font": "Sauber Script", "styles": [""]},
     {"font": "Savoye LET", "styles": [""]},
     {"font": "SignPainter", "styles": [""]},
-    {"font": "Skia", "styles": ["", "Light", "Bold", "Light Condensed", "Condensed", "Light Extended", "Extended"]},
+    {"font": "Skia", "styles": ["", "Light"]},
     {"font": "Snell Roundhand", "styles": [""]},
     {"font": "Trattatello", "styles": [""]},
     {"font": "Zapfino", "styles": [""]},
 ]
+
+ass_styles = []
 
 # FUNCTIONS -------------------------
 def convert_to_ass_time(seconds: float) -> str:
@@ -112,6 +114,9 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
                 back=back,
             )
 
+            ass_styles.append(style_name_white)
+            ass_styles.append(style_name_red)
+
     header += styles_text
     header += """
 [Events]
@@ -127,12 +132,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             duration = end_time - start_time
             
             # CHANGE TO NOT BE BASED ON DURATION BUT SOMETHING ELSE
-            """if duration > 0.8:
-                switch_interval = 0.08
-                flicker_text(start_time, end_time, word_text, subtitles, FONTS, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
+            if duration > 2.0:
+                switch_interval = 0.05
+                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
             else:
-                normal_text(start_time, end_time, word_text, subtitles)"""
-            normal_text(start_time, end_time, word_text, subtitles)
+                normal_text(start_time, end_time, word_text, subtitles)
 
     # Write to the ASS file
     with open(ass_path, "w", encoding="utf-8") as f:
@@ -143,19 +147,18 @@ def normal_text(start_time, end_time, word_text, subtitles):
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},A,,0,0,0,,{text}"
+    line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{text}"
     subtitles.append(line)
 
-def flicker_text(start_time, end_time, word_text, subtitles, fonts, switch_interval=0.05):
+def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
     """Add rapidly changing styles for subtitles."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
     actual_interval = duration / num_chunks
 
     style_names = []
-    for font in fonts:
-        style_names.append(font["font"])
-        style_names.append(f"{font['font']} Red")
+    for style in styles:
+        style_names.append(style)
 
     for i in range(num_chunks):
         chunk_start = start_time + i * actual_interval
