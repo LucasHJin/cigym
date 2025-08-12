@@ -4,7 +4,7 @@ subtitles.ass
 .env
 
 audio.mp4
-test.mp4
+input.mp4
 output_subtitles.mp4
 output_with_cutout.mp4
 output_vhs.mp4

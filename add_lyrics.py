@@ -58,15 +58,19 @@ def convert_to_ass_time(seconds: float) -> str:
     cs = int((seconds - int(seconds)) * 100)
     return f"{h}:{m:02}:{s:02}.{cs:02}"
 
-def make_ass(json_path, ass_path, resolution=(2160, 3840)):
+def make_ass(json_path, ass_path, video_path):
     """Create ASS file with timestamps and settings."""
+    resolution = get_video_resolution(video_path)
+    width = resolution[0]
+    height = resolution[1]
+
     with open(json_path) as f:
         data = json.load(f)
 
     header = f"""[Script Info]
 ScriptType: v4.00+
-PlayResX: {resolution[0]}
-PlayResY: {resolution[1]}
+PlayResX: {width}
+PlayResY: {height}
 WrapStyle: 2
 ScaledBorderAndShadow: yes
 
@@ -181,6 +185,21 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_inte
         line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{word_text}"
         subtitles.append(line)
 
+def get_video_resolution(video_path):
+    """Use ffmpeg.probe to get video resolution (width, height)."""
+    probe = ffmpeg.probe(video_path)
+    
+    # Find the video stream
+    video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+    if not video_streams:
+        raise RuntimeError(f"No video stream found in {video_path}")
+    stream = video_streams[0]
+    
+    # Get resolution 
+    width = int(stream['width'])
+    height = int(stream['height'])
+    return width, height
+
 def burn_subtitles(input, output, subtitles):
     ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", acodec='copy').global_args('-y').run()
 
@@ -192,11 +211,3 @@ def combine_video_audio(video_input, audio_input, output):
     
 
 # IMPLEMENTATION -------------------------
-'''# Create the ass file
-make_ass("transcript.json", "subtitles.ass", resolution=(1024, 576))
-
-# Add audio to the video
-combine_video_audio("test.mp4", "audio.mp4", "video_with_audio.mp4")
-
-# Add subtitles to the video
-burn_subtitles("video_with_audio.mp4", "output_final.mp4", "subtitles.ass")'''
