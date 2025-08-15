@@ -16,10 +16,10 @@ combine_video_audio("output_with_cutout.mp4", "audio.mp4", "output_final.mp4")""
 #make_cinematic("test.mp4", "output_vhs.mp4")
 
 # Testing overall
-transcribe_audio('audio.mp4', 'transcript.json')
-assign_importance("transcript.json", "transcript_processed.json")
+#transcribe_audio('audio.mp4', 'transcript.json')
+#assign_importance("transcript.json", "transcript_processed.json")
 highlights = find_highlights("audio.mp4", "transcript_processed.json", num_clips=4)
-combine_clips(["input.mp4", "input.mp4", "input.mp4", "input.mp4"], highlights, "output_highlights.mp4")
+combine_clips(["input1.mp4", "input2.mp4", "input3.mp4", "input4.mp4"], highlights, "output_highlights.mp4")
 make_ass("transcript_processed.json", "subtitles.ass", "output_highlights.mp4")
 burn_subtitles("output_highlights.mp4", "output_subtitles.mp4", "subtitles.ass")
 combine_video_audio("output_subtitles.mp4", "audio.mp4", "output_final.mp4")

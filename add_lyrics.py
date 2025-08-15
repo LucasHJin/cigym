@@ -84,7 +84,7 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 """
 
     # Generate style entries from FONTS
-    style_template = "Style: {name},{fontname},450,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,60,1\n"
+    style_template = "Style: {name},{fontname},250,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,60,1\n"
     primary_white = "&H00FFFFFF" # White
     primary_red = "&H000000FF" # Red (BGR)
     secondary = "&H00000000"
@@ -187,7 +187,7 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_inte
         ass_start = convert_to_ass_time(chunk_start)
         ass_end = convert_to_ass_time(min(chunk_end, end_time))
 
-        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{word_text}"
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\fs500}}{word_text}"
         subtitles.append(line)
 
 def get_video_resolution(video_path):

@@ -84,34 +84,65 @@ def find_highlights(audio_file, transcript_json, num_clips=5):
 def combine_clips(video_files, highlight_timestamps, output_file):
     """
     Trims multiple video files at given timestamps and concatenates them using filter_complex.
+    If a segment's duration is longer than the remaining clip length, the leftover duration
+    is rolled over to the start of the next clip.
     """
     output_file = add_io_dir(output_file)
     
     filters = []
     inputs = []
     concat_inputs = []
-    
-    # Find start + end for each clip
-    segments = []
-    segments.append((0, highlight_timestamps[0])) # First segment
-    for i in range(len(highlight_timestamps) - 1):
-        segments.append((highlight_timestamps[i]-highlight_timestamps[i], highlight_timestamps[i+1]-highlight_timestamps[i]))
-    
-    # Trim each video
-    for i, (video, (start, end)) in enumerate(zip(video_files, segments)):
-        video = add_io_dir(video)
 
+    leftover = 0  # Leftover duration from previous clip (if it wasn't long enough)
+
+    for i, video in enumerate(video_files):
+        video = add_io_dir(video)
+        clip_length = get_video_duration(video)
+
+        desired_duration = 0
+
+        # Determine desired duration for this clip
+        if i == 0:
+            desired_duration = highlight_timestamps[0]
+        elif i < len(highlight_timestamps):
+            desired_duration = (highlight_timestamps[i] - highlight_timestamps[i-1]) + leftover
+
+        # Trim logic
+        if desired_duration <= clip_length:
+            start = 0
+            duration = desired_duration
+            leftover = 0
+        else:
+            start = 0
+            duration = clip_length
+            leftover = desired_duration - clip_length  # Carry over to next clip
+
+        if duration <= 0:
+            continue  # skip clips that have nothing to trim
+
+        # Add input and filter
         inputs.extend(["-i", video])
-        duration = end-start
-        # Trim and label each segment as v{i}:a{i}
         filters.append(f"[{i}:v]trim=start={start}:duration={duration},setpts=PTS-STARTPTS[v{i}];")
         concat_inputs.append(f"[v{i}]")
+
+    # Concatenate all segments
+    if concat_inputs:
+        filter_complex = "".join(filters) + f"{''.join(concat_inputs)}concat=n={len(concat_inputs)}:v=1:a=0[outv]"
+        cmd = ["ffmpeg", "-y"] + inputs + [
+            "-filter_complex", filter_complex,
+            "-map", "[outv]",
+            output_file
+        ]
+        subprocess.run(cmd)
+
     
-    # Add all segments together
-    filter_complex = "".join(filters) + f"{''.join(concat_inputs)}concat=n={len(segments)}:v=1:a=0[outv]"
-    cmd = ["ffmpeg", "-y"] + inputs + [
-        "-filter_complex", filter_complex,
-        "-map", "[outv]",
-        output_file
-    ]
-    subprocess.run(cmd)
+def get_video_duration(video_file):
+    result = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries",
+         "format=duration", "-of",
+         "default=noprint_wrappers=1:nokey=1", video_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    return float(result.stdout.strip())
