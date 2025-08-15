@@ -2,6 +2,7 @@ import json
 import ffmpeg
 import math
 import random
+from paths import add_io_dir
 
 # CHANGE LIST TO BE RIGHT
 FONTS = [
@@ -60,6 +61,10 @@ def convert_to_ass_time(seconds: float) -> str:
 
 def make_ass(json_path, ass_path, video_path):
     """Create ASS file with timestamps and settings."""
+    json_path = add_io_dir(json_path)
+    ass_path = add_io_dir(ass_path)
+    video_path = add_io_dir(video_path)
+
     resolution = get_video_resolution(video_path)
     width = resolution[0]
     height = resolution[1]
@@ -201,11 +206,17 @@ def get_video_resolution(video_path):
     return width, height
 
 def burn_subtitles(input, output, subtitles):
+    input = add_io_dir(input)
+    output = add_io_dir(output)
+    subtitles = add_io_dir(subtitles)
+    
     ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", acodec='copy').global_args('-y').run()
 
 def combine_video_audio(video_input, audio_input, output):
-    video = ffmpeg.input(video_input)
-    audio = ffmpeg.input(audio_input)
+    video = ffmpeg.input(add_io_dir(video_input))
+    audio = ffmpeg.input(add_io_dir(audio_input))
+
+    output = add_io_dir(output)
 
     ffmpeg.output(video.video, audio.audio, output, vcodec='copy', acodec='aac', shortest=None).global_args('-y').run()
     

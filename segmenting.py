@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 import json
+from paths import add_io_dir
 
 # MAYBE CHANGE SO HIGHLIGHTS IS BASED ON MEDIAN FOR EACH SPLIT UP SEGMENT
 
@@ -14,6 +15,9 @@ def find_highlights(audio_file, transcript_json, num_clips=5):
     Returns:
         highlight_times - array of chosen highlight timestamps
     """
+    audio_file = add_io_dir(audio_file)
+    transcript_json = add_io_dir(transcript_json)
+    
     num_clips -= 1
     
     # Load transcript
@@ -77,10 +81,12 @@ def find_highlights(audio_file, transcript_json, num_clips=5):
     
     return highlight_times
 
-def combine_clips(video_files, highlight_timestamps, output_file="output_highlights.mp4"):
+def combine_clips(video_files, highlight_timestamps, output_file):
     """
     Trims multiple video files at given timestamps and concatenates them using filter_complex.
     """
+    output_file = add_io_dir(output_file)
+    
     filters = []
     inputs = []
     concat_inputs = []
@@ -93,6 +99,8 @@ def combine_clips(video_files, highlight_timestamps, output_file="output_highlig
     
     # Trim each video
     for i, (video, (start, end)) in enumerate(zip(video_files, segments)):
+        video = add_io_dir(video)
+
         inputs.extend(["-i", video])
         duration = end-start
         # Trim and label each segment as v{i}:a{i}

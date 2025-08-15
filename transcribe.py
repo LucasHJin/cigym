@@ -2,12 +2,15 @@ import whisper
 import json
 import string
 from client import client
+from paths import add_io_dir
 
 # FUNCTIONS -------------------------
 # Note -> can't just tell it to return JSON with added importance because it hallucinates words
-def assign_importance(transcript):
+def assign_importance(transcript, output_transcript):
     """Send transcript JSON to Gemini API and get importance scoring per word as a patch."""
-    
+    transcript = add_io_dir(transcript)
+    output_transcript = add_io_dir(output_transcript)
+
     with open(transcript, "r", encoding="utf-8") as f:
         input_json = json.load(f)
     
@@ -72,7 +75,7 @@ Input JSON:
         input_json["segments"][segment_id]["words"][word_index]["importance"] = importance
 
     # Save updated JSON
-    with open("transcript_processed.json", "w", encoding="utf-8") as f:
+    with open(output_transcript, "w", encoding="utf-8") as f:
         json.dump(input_json, f, indent=2, ensure_ascii=False)
 
     print("Finished marking importance")
@@ -138,13 +141,16 @@ def split_segments(result, max_gap=0.2):
 
     return new_segments
 
-def transcribe_audio(file_path):
+def transcribe_audio(file_path, transcript):
+    file_path = add_io_dir(file_path)
+    transcript = add_io_dir(transcript)
+
     model = whisper.load_model('large')
     result = model.transcribe(file_path, language='en', word_timestamps=True)
     result["segments"] = split_segments(result, max_gap=0.2)
-    with open("transcript.json", "w") as f: # json over srt because more precision
+    with open(transcript, "w") as f: # json over srt because more precision
         json.dump(result, f, indent=2)
 
 # IMPLEMENTATION -------------------------
-#transcribe_audio('audio.MP4')
-#assign_importance("transcript.json")
+#transcribe_audio('audio.MP4', 'transcript.json')
+#assign_importance("transcript.json", "transcript_processed.json")

@@ -2,10 +2,14 @@ import subprocess
 import cv2
 import numpy as np
 import random
+from paths import add_io_dir
 
 # Now cut clips
 
 def make_cinematic(input_file, output_file):
+    input_file = add_io_dir(input_file)
+    output_file = add_io_dir(output_file)
+
     ffmpeg_cmd = [
         "ffmpeg",
         "-y",
@@ -29,6 +33,9 @@ def make_cinematic(input_file, output_file):
     subprocess.run(ffmpeg_cmd, check=True)
 
 def add_scanlines_and_glitches(input_file, output_file):
+    input_file = add_io_dir(input_file)
+    output_file = add_io_dir(output_file)
+
     # Open the video file
     cap = cv2.VideoCapture(input_file)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))

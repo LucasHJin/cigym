@@ -2,8 +2,13 @@ import torch
 import cv2
 import numpy as np
 from model import MattingNetwork
+from paths import add_io_dir
 
 def add_foreground_to_background(input_video, background_video, output_video):
+    input_video = add_io_dir(input_video)
+    background_video = add_io_dir(background_video)
+    output_video = add_io_dir(output_video)
+
     # Settings
     device = "cpu"
     model_path = "models/rvm_mobilenetv3.pth"
