@@ -64,7 +64,7 @@ def make_ass(json_path, ass_path, video_path):
     json_path = add_io_dir(json_path)
     ass_path = add_io_dir(ass_path)
     video_path = add_io_dir(video_path)
-
+    
     resolution = get_video_resolution(video_path)
     width = resolution[0]
     height = resolution[1]
@@ -140,12 +140,19 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             end_time = word['end']
             importance = word['importance']
 
-            if importance == 2:
+            # First 2 -> just for if you ever want to grow text size
+            if importance == 4:
                 switch_interval = 0.05
-                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, switch_interval) # NOT JUST FONTS BUT ALL STYLES LATER
+                flicker_text_changing_size(start_time, end_time, word_text, subtitles, ass_styles, 100, 450, switch_interval)
+            elif importance == 3:
+                switch_interval = 0.05
+                flicker_text_changing_size(start_time, end_time, word_text, subtitles, ass_styles, 450, 850, switch_interval)
+            elif importance == 2:
+                switch_interval = 0.05
+                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, 400, switch_interval)
             elif importance == 1:
                 red_text(start_time, end_time, word_text, subtitles)
-            else:
+            elif importance == 0:
                 normal_text(start_time, end_time, word_text, subtitles)
 
     # Write to the ASS file
@@ -168,7 +175,7 @@ def red_text(start_time, end_time, word_text, subtitles):
     line = f"Dialogue: 0,{start},{end},Didot Red,,0,0,0,,{text}"
     subtitles.append(line)
 
-def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_interval=0.05):
+def flicker_text(start_time, end_time, word_text, subtitles, styles, size, switch_interval=0.05):
     """Add rapidly changing styles for subtitles."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
@@ -187,7 +194,31 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, switch_inte
         ass_start = convert_to_ass_time(chunk_start)
         ass_end = convert_to_ass_time(min(chunk_end, end_time))
 
-        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\fs500}}{word_text}"
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\fs{size}}}{word_text}"
+        subtitles.append(line)
+
+def flicker_text_changing_size(start_time, end_time, word_text, subtitles, styles, start_size, end_size, switch_interval=0.05):
+    """Add rapidly changing styles for subtitles with changing sizes."""
+    duration = end_time - start_time
+    num_chunks = math.ceil(duration / switch_interval)
+    actual_interval = duration / num_chunks
+
+    style_names = []
+    for style in styles:
+        style_names.append(style)
+
+    for i in range(num_chunks):
+        chunk_start = start_time + i * actual_interval
+        chunk_end = chunk_start + actual_interval
+
+        current_size = start_size + (end_size - start_size) * (i / num_chunks)
+
+        style = random.choice(style_names)
+
+        ass_start = convert_to_ass_time(chunk_start)
+        ass_end = convert_to_ass_time(min(chunk_end, end_time))
+
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\fs{current_size}}}{word_text}"
         subtitles.append(line)
 
 def get_video_resolution(video_path):

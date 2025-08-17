@@ -8,7 +8,7 @@ from paths import add_io_dir
 
 # MAYBE CHANGE SO HIGHLIGHTS IS BASED ON MEDIAN FOR EACH SPLIT UP SEGMENT
 
-def find_highlights(audio_file, transcript_json, num_clips=5):
+def find_highlights(audio_file, transcript_json, num_clips=5, min_start_time=2.0):
     """
     Finds the highlight points in an audio and matches them with beat drops to help with video clip editing.
     
@@ -52,8 +52,8 @@ def find_highlights(audio_file, transcript_json, num_clips=5):
         start_t = i * section_length
         end_t = (i + 1) * section_length
 
-        # Find peaks in this section
-        section_indices = [p for p in peaks if start_t <= times[p] < end_t]
+        # Find peaks in this section (peak can't be at the 0:00 though)
+        section_indices = [p for p in peaks if start_t <= times[p] < end_t and times[p] >= min_start_time]
 
         if section_indices:
             # Highest hype score
@@ -93,7 +93,8 @@ def combine_clips(video_files, highlight_timestamps, output_file):
     inputs = []
     concat_inputs = []
 
-    leftover = 0  # Leftover duration from previous clip (if it wasn't long enough)
+    leftover = 0 # Leftover duration from previous clip (if it wasn't long enough)
+    ffmpeg_index = 0 # Tracks the actual FFmpeg input index (prevent errors if clip is too short)
 
     for i, video in enumerate(video_files):
         video = add_io_dir(video)
@@ -122,8 +123,9 @@ def combine_clips(video_files, highlight_timestamps, output_file):
 
         # Add input and filter
         inputs.extend(["-i", video])
-        filters.append(f"[{i}:v]trim=start={start}:duration={duration},setpts=PTS-STARTPTS[v{i}];")
-        concat_inputs.append(f"[v{i}]")
+        filters.append(f"[{ffmpeg_index}:v]trim=start={start}:duration={duration},setpts=PTS-STARTPTS[v{ffmpeg_index}];")
+        concat_inputs.append(f"[v{ffmpeg_index}]")
+        ffmpeg_index += 1
 
     # Concatenate all segments
     if concat_inputs:
