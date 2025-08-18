@@ -197,7 +197,7 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, width, heig
         line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\an5\\pos({width//2},{height//2})\\fs{font_size}}}{word_text}"
         subtitles.append(line)
 
-def flicker_text_changing_size(start_time, end_time, word_text, subtitles, styles, width, height, start_size, end_size, switch_interval):
+def flicker_text_changing_size(start_time, end_time, word_text, subtitles, styles, start_size, end_size, width, height, switch_interval):
     """Add rapidly changing styles for subtitles with changing sizes."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
