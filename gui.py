@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 from PySide6.QtWidgets import (
@@ -6,10 +7,11 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QGraphicsItem, QGraphicsLineItem
 )
 from PySide6.QtGui import QBrush, QColor, QCursor, QPainter, QFontMetrics, QPen, QFont
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from paths import add_io_dir
+from combine import initial_processing, repeated_processing
 
 # Model to map individual words on screen to the json
 class WordBlock:
@@ -182,7 +184,7 @@ class SubtitleEditor(QWidget):
         control_layout.addWidget(self.zoom_out_btn)
         # Connect signals to buttons
         self.play_pause_btn.clicked.connect(self.toggle_play_pause)
-        self.export_btn.clicked.connect(self.export_json)
+        self.export_btn.clicked.connect(self.save_changes)
         self.zoom_in_btn.clicked.connect(lambda: self.zoom(1.25))
         self.zoom_out_btn.clicked.connect(lambda: self.zoom(0.8))
 
@@ -243,7 +245,6 @@ class SubtitleEditor(QWidget):
 
     def export_json(self):
         """Updates the JSON with edited word block instance timestamps."""
-        # CHANGE TO DO THE ENTIRE RESET FUNCTION LATER ON
         if not self.json_data:
             return
         for word in self.words:
@@ -254,6 +255,24 @@ class SubtitleEditor(QWidget):
         with open(add_io_dir("transcript_processed.json"), "w") as f:
             json.dump(self.json_data, f, indent=2)
         print("Saved transcript_processed.json")
+        
+    def save_changes(self):
+        """Save all changes and rerender the video."""
+        # Pause player and release video to avoid corruption
+        self.player.pause()
+        
+        # Save changes
+        self.export_json()
+        temp_path = "output_subtitles_temp.mp4" # Pass without the file directory (already does that later)
+        repeated_processing(temp_path)
+        temp_path = add_io_dir(temp_path) # Need temp file so that it doesn't read when not finished updating
+        final_path = add_io_dir("output_subtitles.mp4")
+        os.replace(temp_path, final_path)
+        
+        # Need to reset the player (update reference to video file)
+        self.player.stop()
+        self.player.setSource(QUrl.fromLocalFile(final_path))
+        self.player.pause()
 
     def draw_timeline(self):
         """
@@ -320,6 +339,8 @@ class SubtitleEditor(QWidget):
         return super().eventFilter(obj, event)
 
 if __name__ == "__main__":
+    initial_processing(4, 2.0)
+    # Create application + main window
     app = QApplication(sys.argv)
     editor = SubtitleEditor()
     editor.show()

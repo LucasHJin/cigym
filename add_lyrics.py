@@ -241,7 +241,7 @@ def burn_subtitles(input, output, subtitles):
     output = add_io_dir(output)
     subtitles = add_io_dir(subtitles)
     
-    ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", acodec='copy').global_args('-y').run()
+    ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", vcodec='libx264', acodec='aac', strict='experimental').global_args('-y').run()
 
 def combine_video_audio(video_input, audio_input, output):
     video = ffmpeg.input(add_io_dir(video_input))
@@ -249,7 +249,7 @@ def combine_video_audio(video_input, audio_input, output):
 
     output = add_io_dir(output)
 
-    ffmpeg.output(video.video, audio.audio, output, vcodec='copy', acodec='aac', shortest=None).global_args('-y').run()
+    ffmpeg.output(video, audio, output, vcodec='libx264', acodec='aac', strict='experimental', shortest=None).global_args('-y').run()
     
 
 # IMPLEMENTATION -------------------------
