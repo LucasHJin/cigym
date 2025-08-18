@@ -4,7 +4,7 @@ import json
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton,
     QGraphicsScene, QGraphicsView, QGraphicsRectItem,
-    QHBoxLayout, QGraphicsItem, QGraphicsLineItem
+    QHBoxLayout, QGraphicsItem, QGraphicsLineItem, QComboBox
 )
 from PySide6.QtGui import QBrush, QColor, QCursor, QPainter, QFontMetrics, QPen, QFont
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -15,12 +15,13 @@ from combine import initial_processing, repeated_processing
 
 # Model to map individual words on screen to the json
 class WordBlock:
-    def __init__(self, word, start, end, segment_id, word_index):
+    def __init__(self, word, start, end, segment_id, word_index, importance):
         self.word = word
         self.start = start
         self.end = end
         self.segment_id = segment_id
         self.word_index = word_index
+        self.importance = importance
 
 # GUI block for each word
 class DraggableWord(QGraphicsRectItem):
@@ -125,6 +126,23 @@ class DraggableWord(QGraphicsRectItem):
                 if abs(proposed_right - right) < self.SNAP_THRESHOLD:
                     return right - my_left
         return proposed_width
+
+    def mouseDoubleClickEvent(self, event):
+        """Opens dropdown to select importance level."""
+        combo = QComboBox()
+        combo.addItems(["1", "2", "3", "4"])
+        combo.setCurrentText(str(self.word.importance))
+        # Position dropdown box at mouse click
+        view = self.scene().views()[0]
+        pos = view.mapToGlobal(view.mapFromScene(event.scenePos()))
+        combo.move(pos)
+        combo.show()
+        
+        # Update importance if needed
+        def update_importance(val):
+            self.word.importance = int(val)
+            combo.deleteLater()
+        combo.currentTextChanged.connect(update_importance)
     
     def paint(self, painter: QPainter, option, widget=None):
         """Customizes how the wored block looks."""
@@ -240,7 +258,7 @@ class SubtitleEditor(QWidget):
             for w_idx, w in enumerate(segment.get("words", [])):
                 self.words.append(WordBlock(
                     w["word"], w["start"], w["end"],
-                    segment_id=seg_idx, word_index=w_idx
+                    segment_id=seg_idx, word_index=w_idx, importance=w["importance"]
                 ))
 
     def export_json(self):
@@ -251,6 +269,7 @@ class SubtitleEditor(QWidget):
             seg = self.json_data["segments"][word.segment_id]
             seg["words"][word.word_index]["start"] = word.start
             seg["words"][word.word_index]["end"] = word.end
+            seg["words"][word.word_index]["importance"] = word.importance
         # Write changes to file
         with open(add_io_dir("transcript_processed.json"), "w") as f:
             json.dump(self.json_data, f, indent=2)
