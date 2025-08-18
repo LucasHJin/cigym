@@ -22,5 +22,5 @@ highlights = find_highlights("audio.mp4", "transcript_processed.json", num_clips
 print("HIGHLIGHTS:", highlights)
 combine_clips(["input1.mp4", "input2.mp4", "input3.mp4", "input4.mp4"], highlights, "output_highlights.mp4")
 make_ass("transcript_processed.json", "subtitles.ass", "output_highlights.mp4")
-burn_subtitles("output_highlights.mp4", "output_subtitles.mp4", "subtitles.ass")
-combine_video_audio("output_subtitles.mp4", "audio.mp4", "output_final.mp4")
+combine_video_audio("output_highlights.mp4", "audio.mp4", "output_audio.mp4")
+burn_subtitles("output_audio.mp4", "output_subtitles.mp4", "subtitles.ass")
