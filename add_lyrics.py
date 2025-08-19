@@ -4,7 +4,6 @@ import math
 import random
 from paths import add_io_dir
 
-# CHANGE LIST TO BE RIGHT
 FONTS = [
     {"font": "Academy Engraved LET", "styles": [""]},
     {

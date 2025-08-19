@@ -407,7 +407,7 @@ class SubtitleEditor(QWidget):
 
 
 if __name__ == "__main__":
-    # initial_processing(2, 2.0)
+    initial_processing(2, 2.0)
     # Create application + main window
     app = QApplication(sys.argv)
     editor = SubtitleEditor()
