@@ -12,6 +12,7 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from paths import add_io_dir
 from combine import initial_processing, repeated_processing
+import time
 
 # MAYBE -> make it mark out the highlight places and let you adjust just like word blocks
 
@@ -194,7 +195,7 @@ class SubtitleEditor(QWidget):
         self.player.pause()
 
         # Buttons + timer
-        self.play_pause_btn = QPushButton("Play")
+        self.play_pause_btn = QPushButton("PLAY")
         self.export_btn = QPushButton("SAVE")
         self.zoom_in_btn = QPushButton("+")
         self.zoom_out_btn = QPushButton("-")
@@ -289,18 +290,16 @@ class SubtitleEditor(QWidget):
         
     def save_changes(self):
         """Save all changes and rerender the video."""
-        # Pause player and release video to avoid corruption
         self.player.pause()
-        
-        # Save changes
         self.export_json()
-        temp_path = "output_subtitles_temp.mp4" # Pass without the file directory (already does that later)
-        repeated_processing(temp_path)
-        temp_path = add_io_dir(temp_path) # Need temp file so that it doesn't read when not finished updating
-        final_path = add_io_dir("output_subtitles.mp4")
-        os.replace(temp_path, final_path)
+        repeated_processing("output_subtitles_temp.mp4")
         
-        # Need to reset the player (update reference to video file)
+        # Make a unique filename to force reload
+        temp_path = add_io_dir("output_subtitles_temp.mp4")
+        timestamp = int(time.time() * 1000)
+        final_path = add_io_dir(f"output_subtitles_{timestamp}.mp4")
+        os.replace(temp_path, final_path)
+        # Load into player
         self.player.stop()
         self.player.setSource(QUrl.fromLocalFile(final_path))
         self.player.pause()

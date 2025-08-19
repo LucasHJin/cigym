@@ -5,7 +5,7 @@ subtitles.ass
 
 audio.mp4
 input*.mp4
-output_subtitles.mp4
+output_subtitles*.mp4
 output_with_cutout.mp4
 output_vhs.mp4
 output_highlights.mp4
