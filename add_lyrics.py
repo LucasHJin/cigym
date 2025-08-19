@@ -82,7 +82,7 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 """
 
     # Generate style entries from FONTS
-    style_template = "Style: {name},{fontname},250,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,0,1\n"
+    style_template = "Style: {name},{fontname},120,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,0,1\n"
     primary_white = "&H00FFFFFF" # White
     primary_red = "&H000000FF" # Red (BGR)
     secondary = "&H00000000"
@@ -148,7 +148,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 flicker_text_changing_size(start_time, end_time, word_text, subtitles, ass_styles, 450, 850, width, height, switch_interval)
             elif importance == 2:
                 switch_interval = 0.05
-                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, width, height, 400, switch_interval)
+                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, width, height, 250, switch_interval)
             elif importance == 1:
                 red_text(start_time, end_time, word_text, subtitles, width, height)
             elif importance == 0:

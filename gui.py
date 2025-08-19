@@ -13,6 +13,9 @@ from PySide6.QtMultimediaWidgets import QVideoWidget
 from paths import add_io_dir
 from combine import initial_processing, repeated_processing
 
+# MAYBE -> make it mark out the highlight places and let you adjust just like word blocks
+# ADD TIMER
+
 # Model to map individual words on screen to the json
 class WordBlock:
     def __init__(self, word, start, end, segment_id, word_index, importance):
@@ -358,7 +361,7 @@ class SubtitleEditor(QWidget):
         return super().eventFilter(obj, event)
 
 if __name__ == "__main__":
-    initial_processing(4, 2.0)
+    initial_processing(2, 2.0)
     # Create application + main window
     app = QApplication(sys.argv)
     editor = SubtitleEditor()

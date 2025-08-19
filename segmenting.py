@@ -89,6 +89,8 @@ def combine_clips(video_files, highlight_timestamps, output_file):
     """
     output_file = add_io_dir(output_file)
     
+    target_width, target_height = get_video_resolution(add_io_dir(video_files[0]))
+    
     filters = []
     inputs = []
     concat_inputs = []
@@ -123,7 +125,11 @@ def combine_clips(video_files, highlight_timestamps, output_file):
 
         # Add input and filter
         inputs.extend(["-i", video])
-        filters.append(f"[{ffmpeg_index}:v]trim=start={start}:duration={duration},setpts=PTS-STARTPTS[v{ffmpeg_index}];")
+        filters.append(
+            f"[{ffmpeg_index}:v]trim=start={start}:duration={duration},setpts=PTS-STARTPTS,"
+            f"scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,"
+            f"pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2[v{ffmpeg_index}];"
+        )
         concat_inputs.append(f"[v{ffmpeg_index}]")
         ffmpeg_index += 1
 
@@ -137,6 +143,18 @@ def combine_clips(video_files, highlight_timestamps, output_file):
         ]
         subprocess.run(cmd)
 
+def get_video_resolution(video_file):
+    result = subprocess.run(
+        ["ffprobe", "-v", "error",
+         "-select_streams", "v:0",
+         "-show_entries", "stream=width,height",
+         "-of", "csv=p=0:s=x", video_file],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    width, height = map(int, result.stdout.strip().split("x"))
+    return width, height
     
 def get_video_duration(video_file):
     result = subprocess.run(
