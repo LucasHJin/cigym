@@ -2,9 +2,19 @@ import os
 import sys
 import json
 from PySide6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton,
-    QGraphicsScene, QGraphicsView, QGraphicsRectItem,
-    QHBoxLayout, QGraphicsItem, QGraphicsLineItem, QComboBox, QLabel, QSizePolicy
+    QApplication,
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QGraphicsScene,
+    QGraphicsView,
+    QGraphicsRectItem,
+    QHBoxLayout,
+    QGraphicsItem,
+    QGraphicsLineItem,
+    QComboBox,
+    QLabel,
+    QSizePolicy,
 )
 from PySide6.QtGui import QBrush, QColor, QCursor, QPainter, QFontMetrics, QPen, QFont
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -16,6 +26,7 @@ import time
 
 # MAYBE -> make it mark out the highlight places and let you adjust just like word blocks
 
+
 # Model to map individual words on screen to the json
 class WordBlock:
     def __init__(self, word, start, end, segment_id, word_index, importance):
@@ -25,6 +36,7 @@ class WordBlock:
         self.segment_id = segment_id
         self.word_index = word_index
         self.importance = importance
+
 
 # GUI block for each word
 class DraggableWord(QGraphicsRectItem):
@@ -36,12 +48,12 @@ class DraggableWord(QGraphicsRectItem):
         duration = word.end - word.start
         super().__init__(0, 0, duration * time_scale, 30)
         self.word = word
-        self.time_scale = time_scale # Zoom scale (pixels / second)
+        self.time_scale = time_scale  # Zoom scale (pixels / second)
         self.setBrush(QBrush(QColor("#7f95e3")))
         # Make item draggable + resizeable
         self.setFlags(
-            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable |
-            QGraphicsItem.GraphicsItemFlag.ItemIsMovable
+            QGraphicsItem.GraphicsItemFlag.ItemIsSelectable
+            | QGraphicsItem.GraphicsItemFlag.ItemIsMovable
         )
         self.resizing = False
 
@@ -140,13 +152,14 @@ class DraggableWord(QGraphicsRectItem):
         pos = view.mapToGlobal(view.mapFromScene(event.scenePos()))
         combo.move(pos)
         combo.show()
-        
+
         # Update importance if needed
         def update_importance(val):
             self.word.importance = int(val)
             combo.deleteLater()
+
         combo.currentTextChanged.connect(update_importance)
-    
+
     def paint(self, painter: QPainter, option, widget=None):
         """Customizes how the wored block looks."""
         painter.setBrush(self.brush())
@@ -163,8 +176,9 @@ class DraggableWord(QGraphicsRectItem):
         painter.drawText(
             self.rect(),
             int(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter),
-            text
+            text,
         )
+
 
 class SubtitleEditor(QWidget):
     def __init__(self):
@@ -172,7 +186,7 @@ class SubtitleEditor(QWidget):
         super().__init__()
         self.setWindowTitle("Cigym Subtitle Editor")
         self.resize(1200, 700)
-        
+
         # State variables
         self.time_scale = 100
         self.words = []
@@ -180,8 +194,10 @@ class SubtitleEditor(QWidget):
         self.playhead_dragging = False
 
         # Layouts
-        main_layout = QVBoxLayout(self) # Vertical main stack (video, control, timeline)
-        control_layout = QVBoxLayout() # Vertical buttons
+        main_layout = QVBoxLayout(
+            self
+        )  # Vertical main stack (video, control, timeline)
+        control_layout = QVBoxLayout()  # Vertical buttons
 
         # Video (video, sound, playback)
         self.video_widget = QVideoWidget()
@@ -207,12 +223,14 @@ class SubtitleEditor(QWidget):
 
         control_layout = QVBoxLayout()
         control_layout.addLayout(button_layout)
-        
+
         self.time_label = QLabel("0:00.00 / 0:00.00")
         self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.time_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        self.time_label.setSizePolicy(
+            QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed
+        )
         control_layout.addWidget(self.time_label)
-        
+
         # Connect signals to buttons
         self.play_pause_btn.clicked.connect(self.toggle_play_pause)
         self.export_btn.clicked.connect(self.save_changes)
@@ -223,11 +241,11 @@ class SubtitleEditor(QWidget):
         main_layout.addLayout(control_layout)
 
         # Timeline
-        self.scene = QGraphicsScene() # Scene for blocks and playhead
-        self.view = QGraphicsView(self.scene) # View to display scene
+        self.scene = QGraphicsScene()  # Scene for blocks and playhead
+        self.view = QGraphicsView(self.scene)  # View to display scene
         self.view.setFixedHeight(80)
         main_layout.addWidget(self.view)
-        self.view.viewport().installEventFilter(self) # Function for moving playhead
+        self.view.viewport().installEventFilter(self)  # Function for moving playhead
 
         # Playhead
         self.playhead = QGraphicsLineItem(0, 0, 0, 40)
@@ -251,11 +269,11 @@ class SubtitleEditor(QWidget):
         else:
             self.player.play()
             self.play_pause_btn.setText("Pause")
-            
+
     def zoom(self, factor):
         """Zooms in/out for the timeline by adjusting the time scale (how many px/sec)."""
         current_time = self.player.position() / 1000
-        self.time_scale = max(20, min(500, int(self.time_scale * factor)))  
+        self.time_scale = max(20, min(500, int(self.time_scale * factor)))
         self.draw_timeline()
         pos = current_time * self.time_scale
         self.playhead.setLine(pos, 0, pos, 40)
@@ -269,10 +287,16 @@ class SubtitleEditor(QWidget):
         # Need segment and word index to be able to edit the json later on
         for seg_idx, segment in enumerate(self.json_data.get("segments", [])):
             for w_idx, w in enumerate(segment.get("words", [])):
-                self.words.append(WordBlock(
-                    w["word"], w["start"], w["end"],
-                    segment_id=seg_idx, word_index=w_idx, importance=w["importance"]
-                ))
+                self.words.append(
+                    WordBlock(
+                        w["word"],
+                        w["start"],
+                        w["end"],
+                        segment_id=seg_idx,
+                        word_index=w_idx,
+                        importance=w["importance"],
+                    )
+                )
 
     def export_json(self):
         """Updates the JSON with edited word block instance timestamps."""
@@ -287,13 +311,13 @@ class SubtitleEditor(QWidget):
         with open(add_io_dir("transcript_processed.json"), "w") as f:
             json.dump(self.json_data, f, indent=2)
         print("Saved transcript_processed.json")
-        
+
     def save_changes(self):
         """Save all changes and rerender the video."""
         self.player.pause()
         self.export_json()
         repeated_processing("output_subtitles_temp.mp4")
-        
+
         # Make a unique filename to force reload
         temp_path = add_io_dir("output_subtitles_temp.mp4")
         timestamp = int(time.time() * 1000)
@@ -339,7 +363,9 @@ class SubtitleEditor(QWidget):
 
         # Update timer label
         duration = self.player.duration() / 1000 if self.player.duration() > 0 else 0
-        self.time_label.setText(f"{self.format_time(pos)} / {self.format_time(duration)}")
+        self.time_label.setText(
+            f"{self.format_time(pos)} / {self.format_time(duration)}"
+        )
 
     def eventFilter(self, obj, event):
         """Filters mouse events in the timeline (i.e. clicking on a word block vs clicking on timeline vs dragging on timeline.)"""
@@ -365,20 +391,23 @@ class SubtitleEditor(QWidget):
                 self.player.setPosition(int(x / self.time_scale * 1000))
                 return True
             # Stop dragging when mouse is released
-            elif event.type() == event.Type.MouseButtonRelease and self.playhead_dragging:
+            elif (
+                event.type() == event.Type.MouseButtonRelease and self.playhead_dragging
+            ):
                 self.playhead_dragging = False
                 return True
 
         # Fallback if nothing else
         return super().eventFilter(obj, event)
-    
+
     def format_time(self, seconds):
         """Formats time in 0:00.00 to display video timeline."""
         m, s = divmod(seconds, 60)
         return f"{int(m)}:{s:05.2f}"
 
+
 if __name__ == "__main__":
-    #initial_processing(2, 2.0)
+    # initial_processing(2, 2.0)
     # Create application + main window
     app = QApplication(sys.argv)
     editor = SubtitleEditor()

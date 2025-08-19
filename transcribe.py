@@ -4,6 +4,7 @@ import string
 from client import client
 from paths import add_io_dir
 
+
 # FUNCTIONS -------------------------
 # Note -> can't just tell it to return JSON with added importance because it hallucinates words
 def assign_importance(transcript, output_transcript):
@@ -13,7 +14,7 @@ def assign_importance(transcript, output_transcript):
 
     with open(transcript, "r", encoding="utf-8") as f:
         input_json = json.load(f)
-    
+
     prompt = f"""
 You are given a transcription JSON of a song or spoken phrase.
 Your task:
@@ -36,11 +37,8 @@ Input JSON:
 {json.dumps(input_json, indent=2)}
 """
     # Query the API
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt
-    )
-    
+    response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+
     # Get output
     output_text = ""
     if response.candidates and response.candidates[0].content:
@@ -54,7 +52,8 @@ Input JSON:
     # Remove markdown ticks if there are any
     if output_text.strip().startswith("```"):
         output_text = "\n".join(
-            line for line in output_text.splitlines()
+            line
+            for line in output_text.splitlines()
             if not line.strip().startswith("```")
         )
 
@@ -72,13 +71,16 @@ Input JSON:
         segment_id = entry["segment_id"]
         word_index = entry["word_index"]
         importance = entry["importance"]
-        input_json["segments"][segment_id]["words"][word_index]["importance"] = importance
+        input_json["segments"][segment_id]["words"][word_index]["importance"] = (
+            importance
+        )
 
     # Save updated JSON
     with open(output_transcript, "w", encoding="utf-8") as f:
         json.dump(input_json, f, indent=2, ensure_ascii=False)
 
     print("Finished marking importance")
+
 
 def split_segments(result, max_gap=0.2):
     """
@@ -87,7 +89,7 @@ def split_segments(result, max_gap=0.2):
     """
     new_segments = []
     remove_punct = str.maketrans("", "", string.punctuation)
-    
+
     # Go through each segment
     for segment in result["segments"]:
         words = segment.get("words", [])
@@ -103,22 +105,28 @@ def split_segments(result, max_gap=0.2):
 
         # Go through each word and eheck gap
         for i in range(1, len(words)):
-            prev_word = words[i-1]
+            prev_word = words[i - 1]
             curr_word = words[i]
-            curr_word["word"] = curr_word["word"].translate(remove_punct).strip().upper()
+            curr_word["word"] = (
+                curr_word["word"].translate(remove_punct).strip().upper()
+            )
             gap = curr_word["start"] - prev_word["end"]
 
             if gap > max_gap:
                 # If gap big enough, close off current subsegment
-                text = " ".join(w["word"].upper() for w in current_words).strip() # Get just words for the text
+                text = " ".join(
+                    w["word"].upper() for w in current_words
+                ).strip()  # Get just words for the text
                 text = text.translate(remove_punct)
-                new_segments.append({
-                    "id": len(new_segments),
-                    "start": current_start,
-                    "end": current_end,
-                    "text": text,
-                    "words": current_words
-                })
+                new_segments.append(
+                    {
+                        "id": len(new_segments),
+                        "start": current_start,
+                        "end": current_end,
+                        "text": text,
+                        "words": current_words,
+                    }
+                )
                 # Start new subsegment
                 current_words = [curr_word]
                 current_start = curr_word["start"]
@@ -131,26 +139,25 @@ def split_segments(result, max_gap=0.2):
         if current_words:
             text = "".join(w["word"] for w in current_words).strip()
             text = text.translate(remove_punct)
-            new_segments.append({
-                "id": len(new_segments),
-                "start": current_start,
-                "end": current_end,
-                "text": text,
-                "words": current_words
-            })
+            new_segments.append(
+                {
+                    "id": len(new_segments),
+                    "start": current_start,
+                    "end": current_end,
+                    "text": text,
+                    "words": current_words,
+                }
+            )
 
     return new_segments
+
 
 def transcribe_audio(file_path, transcript):
     file_path = add_io_dir(file_path)
     transcript = add_io_dir(transcript)
 
-    model = whisper.load_model('large')
-    result = model.transcribe(file_path, language='en', word_timestamps=True)
+    model = whisper.load_model("large")
+    result = model.transcribe(file_path, language="en", word_timestamps=True)
     result["segments"] = split_segments(result, max_gap=0.2)
-    with open(transcript, "w") as f: # json over srt because more precision
+    with open(transcript, "w") as f:  # json over srt because more precision
         json.dump(result, f, indent=2)
-
-# IMPLEMENTATION -------------------------
-#transcribe_audio('audio.MP4', 'transcript.json')
-#assign_importance("transcript.json", "transcript_processed.json")

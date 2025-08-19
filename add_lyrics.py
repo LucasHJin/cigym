@@ -7,7 +7,17 @@ from paths import add_io_dir
 # CHANGE LIST TO BE RIGHT
 FONTS = [
     {"font": "Academy Engraved LET", "styles": [""]},
-    {"font": "American Typewriter", "styles": ["", "Light", "Semibold", "Condensed Light", "Condensed", "Condensed Bold"]},
+    {
+        "font": "American Typewriter",
+        "styles": [
+            "",
+            "Light",
+            "Semibold",
+            "Condensed Light",
+            "Condensed",
+            "Condensed Bold",
+        ],
+    },
     {"font": "Annai MN", "styles": [""]},
     {"font": "Apple Chancery", "styles": [""]},
     {"font": "Baskerville", "styles": ["", "Italic", "SemiBold Italic"]},
@@ -48,6 +58,7 @@ FONTS = [
     {"font": "Zapfino", "styles": [""]},
 ]
 
+
 # FUNCTIONS -------------------------
 def convert_to_ass_time(seconds: float) -> str:
     """Convert seconds to ASS timestamp format - H:MM:SS.cs"""
@@ -57,12 +68,13 @@ def convert_to_ass_time(seconds: float) -> str:
     cs = int((seconds - int(seconds)) * 100)
     return f"{h}:{m:02}:{s:02}.{cs:02}"
 
+
 def make_ass(json_path, ass_path, video_path):
     """Create ASS file with timestamps and settings."""
     json_path = add_io_dir(json_path)
     ass_path = add_io_dir(ass_path)
     video_path = add_io_dir(video_path)
-    
+
     resolution = get_video_resolution(video_path)
     width = resolution[0]
     height = resolution[1]
@@ -83,8 +95,8 @@ Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour,
 
     # Generate style entries from FONTS
     style_template = "Style: {name},{fontname},120,{primary},{secondary},{outline},{back},0,0,0,0,100,110,0,0,0,0,0,5,30,30,0,1\n"
-    primary_white = "&H00FFFFFF" # White
-    primary_red = "&H000000FF" # Red (BGR)
+    primary_white = "&H00FFFFFF"  # White
+    primary_red = "&H000000FF"  # Red (BGR)
     secondary = "&H00000000"
     outline = "&H00000000"
     back = "&H00000000"
@@ -132,23 +144,55 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     subtitles = []
 
-    for segment in data['segments']:
-        for word in segment['words']:
-            word_text = word['word'].strip()
-            start_time = word['start']
-            end_time = word['end']
-            importance = word['importance']
+    for segment in data["segments"]:
+        for word in segment["words"]:
+            word_text = word["word"].strip()
+            start_time = word["start"]
+            end_time = word["end"]
+            importance = word["importance"]
 
             # First 2 -> just for if you ever want to grow text size
             if importance == 4:
                 switch_interval = 0.05
-                flicker_text_changing_size(start_time, end_time, word_text, subtitles, ass_styles, 100, 450, width, height, switch_interval)
+                flicker_text_changing_size(
+                    start_time,
+                    end_time,
+                    word_text,
+                    subtitles,
+                    ass_styles,
+                    100,
+                    450,
+                    width,
+                    height,
+                    switch_interval,
+                )
             elif importance == 3:
                 switch_interval = 0.05
-                flicker_text_changing_size(start_time, end_time, word_text, subtitles, ass_styles, 450, 850, width, height, switch_interval)
+                flicker_text_changing_size(
+                    start_time,
+                    end_time,
+                    word_text,
+                    subtitles,
+                    ass_styles,
+                    450,
+                    850,
+                    width,
+                    height,
+                    switch_interval,
+                )
             elif importance == 2:
                 switch_interval = 0.05
-                flicker_text(start_time, end_time, word_text, subtitles, ass_styles, width, height, 250, switch_interval)
+                flicker_text(
+                    start_time,
+                    end_time,
+                    word_text,
+                    subtitles,
+                    ass_styles,
+                    width,
+                    height,
+                    250,
+                    switch_interval,
+                )
             elif importance == 1:
                 red_text(start_time, end_time, word_text, subtitles, width, height)
             elif importance == 0:
@@ -158,24 +202,37 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     with open(ass_path, "w", encoding="utf-8") as f:
         f.write(header + "\n".join(subtitles))
 
+
 def normal_text(start_time, end_time, word_text, subtitles, width, height):
     """Add the normal text for the subtitles."""
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{{\\an5\\pos({width//2},{height//2})}}{text}"
+    line = f"Dialogue: 0,{start},{end},Didot,,0,0,0,,{{\\an5\\pos({width // 2},{height // 2})}}{text}"
     subtitles.append(line)
-    
+
+
 def red_text(start_time, end_time, word_text, subtitles, width, height):
     """Add the red text for the subtitles."""
     start = convert_to_ass_time(start_time)
     end = convert_to_ass_time(end_time)
     text = word_text.strip()
-    line = f"Dialogue: 0,{start},{end},Didot Red,,0,0,0,,{{\\an5\\pos({width//2},{height//2})}}{text}"
+    line = f"Dialogue: 0,{start},{end},Didot Red,,0,0,0,,{{\\an5\\pos({width // 2},{height // 2})}}{text}"
 
     subtitles.append(line)
 
-def flicker_text(start_time, end_time, word_text, subtitles, styles, width, height, font_size, switch_interval):
+
+def flicker_text(
+    start_time,
+    end_time,
+    word_text,
+    subtitles,
+    styles,
+    width,
+    height,
+    font_size,
+    switch_interval,
+):
     """Add rapidly changing styles for subtitles."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
@@ -194,10 +251,22 @@ def flicker_text(start_time, end_time, word_text, subtitles, styles, width, heig
         ass_start = convert_to_ass_time(chunk_start)
         ass_end = convert_to_ass_time(min(chunk_end, end_time))
 
-        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\an5\\pos({width//2},{height//2})\\fs{font_size}}}{word_text}"
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\an5\\pos({width // 2},{height // 2})\\fs{font_size}}}{word_text}"
         subtitles.append(line)
 
-def flicker_text_changing_size(start_time, end_time, word_text, subtitles, styles, start_size, end_size, width, height, switch_interval):
+
+def flicker_text_changing_size(
+    start_time,
+    end_time,
+    word_text,
+    subtitles,
+    styles,
+    start_size,
+    end_size,
+    width,
+    height,
+    switch_interval,
+):
     """Add rapidly changing styles for subtitles with changing sizes."""
     duration = end_time - start_time
     num_chunks = math.ceil(duration / switch_interval)
@@ -218,30 +287,41 @@ def flicker_text_changing_size(start_time, end_time, word_text, subtitles, style
         ass_start = convert_to_ass_time(chunk_start)
         ass_end = convert_to_ass_time(min(chunk_end, end_time))
 
-        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\an5\\pos({width//2},{height//2})\\fs{current_size}}}{word_text}"
+        line = f"Dialogue: 0,{ass_start},{ass_end},{style},,0,0,0,,{{\\an5\\pos({width // 2},{height // 2})\\fs{current_size}}}{word_text}"
         subtitles.append(line)
+
 
 def get_video_resolution(video_path):
     """Use ffmpeg.probe to get video resolution (width, height)."""
     probe = ffmpeg.probe(video_path)
-    
+
     # Find the video stream
-    video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+    video_streams = [
+        stream for stream in probe["streams"] if stream["codec_type"] == "video"
+    ]
     if not video_streams:
         raise RuntimeError(f"No video stream found in {video_path}")
     stream = video_streams[0]
-    
-    # Get resolution 
-    width = int(stream['width'])
-    height = int(stream['height'])
+
+    # Get resolution
+    width = int(stream["width"])
+    height = int(stream["height"])
     return width, height
+
 
 def burn_subtitles(input, output, subtitles):
     input = add_io_dir(input)
     output = add_io_dir(output)
     subtitles = add_io_dir(subtitles)
-    
-    ffmpeg.input(input).output(output, vf=f"ass={subtitles}:shaping=complex", vcodec='libx264', acodec='aac', strict='experimental').global_args('-y').run()
+
+    ffmpeg.input(input).output(
+        output,
+        vf=f"ass={subtitles}:shaping=complex",
+        vcodec="libx264",
+        acodec="aac",
+        strict="experimental",
+    ).global_args("-y").run()
+
 
 def combine_video_audio(video_input, audio_input, output):
     video = ffmpeg.input(add_io_dir(video_input))
@@ -249,4 +329,12 @@ def combine_video_audio(video_input, audio_input, output):
 
     output = add_io_dir(output)
 
-    ffmpeg.output(video, audio, output, vcodec='libx264', acodec='aac', strict='experimental', shortest=None).global_args('-y').run()
+    ffmpeg.output(
+        video,
+        audio,
+        output,
+        vcodec="libx264",
+        acodec="aac",
+        strict="experimental",
+        shortest=None,
+    ).global_args("-y").run()

@@ -4,6 +4,7 @@ import numpy as np
 from model import MattingNetwork
 from paths import add_io_dir
 
+
 def add_foreground_to_background(input_video, background_video, output_video):
     input_video = add_io_dir(input_video)
     background_video = add_io_dir(background_video)
@@ -12,8 +13,8 @@ def add_foreground_to_background(input_video, background_video, output_video):
     # Settings
     device = "cpu"
     model_path = "models/rvm_mobilenetv3.pth"
-    downsample_ratio = 0.8 # 0-1, higher = better but slower
-    
+    downsample_ratio = 0.8  # 0-1, higher = better but slower
+
     # Load the model
     model = MattingNetwork("mobilenetv3").eval().to(device)
     model.load_state_dict(torch.load(model_path, map_location=device))
@@ -35,7 +36,7 @@ def add_foreground_to_background(input_video, background_video, output_video):
     frame_count = int(cap_fg.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # Setup output video writer (no alpha)
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v") # type: ignore
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # type: ignore
     print(fourcc)
     out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
@@ -60,7 +61,10 @@ def add_foreground_to_background(input_video, background_video, output_video):
         #   convert float to 0-1
         #   add a batch dimension in front of chw
         #   change to CPU
-        src = torch.from_numpy(frame_fg[:, :, ::-1].copy()).permute(2, 0, 1).float() / 255.0
+        src = (
+            torch.from_numpy(frame_fg[:, :, ::-1].copy()).permute(2, 0, 1).float()
+            / 255.0
+        )
         src = src.unsqueeze(0).to(device)
 
         # Run model
@@ -74,7 +78,9 @@ def add_foreground_to_background(input_video, background_video, output_video):
         alpha_np = (alpha[0, 0].cpu().numpy() * 255).astype(np.uint8)
 
         if alpha_np.ndim != 2 or alpha_np.size == 0:
-            print(f"Skipping frame {frame_num} due to invalid alpha shape: {alpha_np.shape}")
+            print(
+                f"Skipping frame {frame_num} due to invalid alpha shape: {alpha_np.shape}"
+            )
             continue
 
         # Post-process alpha mask
@@ -94,7 +100,7 @@ def add_foreground_to_background(input_video, background_video, output_video):
         # Normalize alpha mask to 0-1 float for blending
         alpha_norm = alpha_np.astype(np.float32) / 255.0
         alpha_3c = np.repeat(alpha_norm[:, :, np.newaxis], 3, axis=2)
-        
+
         # Convert model's RGB output to BGR to match OpenCV
         fgr_bgr = cv2.cvtColor(fgr_np, cv2.COLOR_RGB2BGR)
 
@@ -103,7 +109,10 @@ def add_foreground_to_background(input_video, background_video, output_video):
             frame_bg = cv2.resize(frame_bg, (frame_fg.shape[1], frame_fg.shape[0]))
 
         # Combine foreground and background
-        composite = (alpha_3c * fgr_bgr.astype(np.float32) + (1 - alpha_3c) * frame_bg.astype(np.float32)).astype(np.uint8)
+        composite = (
+            alpha_3c * fgr_bgr.astype(np.float32)
+            + (1 - alpha_3c) * frame_bg.astype(np.float32)
+        ).astype(np.uint8)
 
         # Write combined frame to output
         out.write(composite)
@@ -114,5 +123,3 @@ def add_foreground_to_background(input_video, background_video, output_video):
     out.release()
 
     print(f"Saved composited video to: {output_video}")
-
-#add_foreground_to_background('test.mp4', 'output_final.mp4', 'output_with_cutout.mp4')

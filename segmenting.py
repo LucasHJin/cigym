@@ -8,25 +8,39 @@ from paths import add_io_dir
 
 # MAYBE CHANGE SO HIGHLIGHTS IS BASED ON MEDIAN FOR EACH SPLIT UP SEGMENT
 
+
 def find_highlights(audio_file, transcript_json, num_clips=5, min_start_time=2.0):
     """
     Finds the highlight points in an audio and matches them with beat drops to help with video clip editing.
-    
+
     Returns:
         highlight_times - array of chosen highlight timestamps
     """
     audio_file = add_io_dir(audio_file)
     transcript_json = add_io_dir(transcript_json)
-    
+
     num_clips -= 1
-    
+
     # Load transcript
     with open(transcript_json, "r") as f:
         transcript_json = json.load(f)
-    
+
     # Load audio
     if audio_file.endswith(".mp4"):
-        subprocess.run(["ffmpeg", "-y", "-i", audio_file, "-vn", "-ac", "2", "-ar", "44100", "audio.wav"])
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                audio_file,
+                "-vn",
+                "-ac",
+                "2",
+                "-ar",
+                "44100",
+                "audio.wav",
+            ]
+        )
         audio_file = "audio.wav"
     y, sr = librosa.load(audio_file, sr=None)
 
@@ -41,7 +55,9 @@ def find_highlights(audio_file, transcript_json, num_clips=5, min_start_time=2.0
 
     # Find peaks from single 'hype' data set
     hype_score = 0.6 * rms_norm + 0.4 * onset_norm
-    times = librosa.frames_to_time(np.arange(len(hype_score)), sr=sr, hop_length=hop_length)
+    times = librosa.frames_to_time(
+        np.arange(len(hype_score)), sr=sr, hop_length=hop_length
+    )
     peaks, _ = find_peaks(hype_score, height=np.median(hype_score))
 
     # Pick best peak in each section
@@ -53,14 +69,18 @@ def find_highlights(audio_file, transcript_json, num_clips=5, min_start_time=2.0
         end_t = (i + 1) * section_length
 
         # Find peaks in this section (peak can't be at the 0:00 though)
-        section_indices = [p for p in peaks if start_t <= times[p] < end_t and times[p] >= min_start_time]
+        section_indices = [
+            p
+            for p in peaks
+            if start_t <= times[p] < end_t and times[p] >= min_start_time
+        ]
 
         if section_indices:
             # Highest hype score
             best_peak = max(section_indices, key=lambda x: hype_score[x])
             peak_time = times[best_peak]
             selected.append(peak_time)
-            
+
     highlight_times = []
     if transcript_json:
         # Flatten all words with their start/end times
@@ -75,11 +95,12 @@ def find_highlights(audio_file, transcript_json, num_clips=5, min_start_time=2.0
             highlight_times.append(closest_word["start"])
 
     duration = librosa.get_duration(y=y, sr=sr)
-    highlight_times.append(duration) # Need last segment to end when audio ends
+    highlight_times.append(duration)  # Need last segment to end when audio ends
 
     highlight_times = sorted(highlight_times)
-    
+
     return highlight_times
+
 
 def combine_clips(video_files, highlight_timestamps, output_file):
     """
@@ -88,15 +109,17 @@ def combine_clips(video_files, highlight_timestamps, output_file):
     is rolled over to the start of the next clip.
     """
     output_file = add_io_dir(output_file)
-    
+
     target_width, target_height = get_video_resolution(add_io_dir(video_files[0]))
-    
+
     filters = []
     inputs = []
     concat_inputs = []
 
-    leftover = 0 # Leftover duration from previous clip (if it wasn't long enough)
-    ffmpeg_index = 0 # Tracks the actual FFmpeg input index (prevent errors if clip is too short)
+    leftover = 0  # Leftover duration from previous clip (if it wasn't long enough)
+    ffmpeg_index = (
+        0  # Tracks the actual FFmpeg input index (prevent errors if clip is too short)
+    )
 
     for i, video in enumerate(video_files):
         video = add_io_dir(video)
@@ -108,7 +131,9 @@ def combine_clips(video_files, highlight_timestamps, output_file):
         if i == 0:
             desired_duration = highlight_timestamps[0]
         elif i < len(highlight_timestamps):
-            desired_duration = (highlight_timestamps[i] - highlight_timestamps[i-1]) + leftover
+            desired_duration = (
+                highlight_timestamps[i] - highlight_timestamps[i - 1]
+            ) + leftover
 
         # Trim logic
         if desired_duration <= clip_length:
@@ -135,34 +160,54 @@ def combine_clips(video_files, highlight_timestamps, output_file):
 
     # Concatenate all segments
     if concat_inputs:
-        filter_complex = "".join(filters) + f"{''.join(concat_inputs)}concat=n={len(concat_inputs)}:v=1:a=0[outv]"
-        cmd = ["ffmpeg", "-y"] + inputs + [
-            "-filter_complex", filter_complex,
-            "-map", "[outv]",
-            output_file
-        ]
+        filter_complex = (
+            "".join(filters)
+            + f"{''.join(concat_inputs)}concat=n={len(concat_inputs)}:v=1:a=0[outv]"
+        )
+        cmd = (
+            ["ffmpeg", "-y"]
+            + inputs
+            + ["-filter_complex", filter_complex, "-map", "[outv]", output_file]
+        )
         subprocess.run(cmd)
+
 
 def get_video_resolution(video_file):
     result = subprocess.run(
-        ["ffprobe", "-v", "error",
-         "-select_streams", "v:0",
-         "-show_entries", "stream=width,height",
-         "-of", "csv=p=0:s=x", video_file],
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height",
+            "-of",
+            "csv=p=0:s=x",
+            video_file,
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
     )
     width, height = map(int, result.stdout.strip().split("x"))
     return width, height
-    
+
+
 def get_video_duration(video_file):
     result = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries",
-         "format=duration", "-of",
-         "default=noprint_wrappers=1:nokey=1", video_file],
+        [
+            "ffprobe",
+            "-v",
+            "error",
+            "-show_entries",
+            "format=duration",
+            "-of",
+            "default=noprint_wrappers=1:nokey=1",
+            video_file,
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        text=True
+        text=True,
     )
     return float(result.stdout.strip())
