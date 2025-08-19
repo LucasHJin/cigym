@@ -4,7 +4,7 @@ import json
 from PySide6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton,
     QGraphicsScene, QGraphicsView, QGraphicsRectItem,
-    QHBoxLayout, QGraphicsItem, QGraphicsLineItem, QComboBox
+    QHBoxLayout, QGraphicsItem, QGraphicsLineItem, QComboBox, QLabel, QSizePolicy
 )
 from PySide6.QtGui import QBrush, QColor, QCursor, QPainter, QFontMetrics, QPen, QFont
 from PySide6.QtCore import Qt, QTimer, QUrl
@@ -14,7 +14,6 @@ from paths import add_io_dir
 from combine import initial_processing, repeated_processing
 
 # MAYBE -> make it mark out the highlight places and let you adjust just like word blocks
-# ADD TIMER
 
 # Model to map individual words on screen to the json
 class WordBlock:
@@ -181,7 +180,7 @@ class SubtitleEditor(QWidget):
 
         # Layouts
         main_layout = QVBoxLayout(self) # Vertical main stack (video, control, timeline)
-        control_layout = QHBoxLayout() # Horizontal buttons
+        control_layout = QVBoxLayout() # Vertical buttons
 
         # Video (video, sound, playback)
         self.video_widget = QVideoWidget()
@@ -194,15 +193,25 @@ class SubtitleEditor(QWidget):
         self.player.setSource(add_io_dir("output_subtitles.mp4"))
         self.player.pause()
 
-        # Buttons
+        # Buttons + timer
         self.play_pause_btn = QPushButton("Play")
         self.export_btn = QPushButton("SAVE")
         self.zoom_in_btn = QPushButton("+")
         self.zoom_out_btn = QPushButton("-")
-        control_layout.addWidget(self.play_pause_btn)
-        control_layout.addWidget(self.export_btn)
-        control_layout.addWidget(self.zoom_in_btn)
-        control_layout.addWidget(self.zoom_out_btn)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.play_pause_btn)
+        button_layout.addWidget(self.export_btn)
+        button_layout.addWidget(self.zoom_in_btn)
+        button_layout.addWidget(self.zoom_out_btn)
+
+        control_layout = QVBoxLayout()
+        control_layout.addLayout(button_layout)
+        
+        self.time_label = QLabel("0:00.00 / 0:00.00")
+        self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.time_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        control_layout.addWidget(self.time_label)
+        
         # Connect signals to buttons
         self.play_pause_btn.clicked.connect(self.toggle_play_pause)
         self.export_btn.clicked.connect(self.save_changes)
@@ -326,8 +335,12 @@ class SubtitleEditor(QWidget):
         # Don't call this if the playhead is being dragged manually by user
         if self.playhead_dragging:
             return
-        pos = self.player.position() / 1000 * self.time_scale
-        self.playhead.setLine(pos, 0, pos, 40)
+        pos = self.player.position() / 1000
+        self.playhead.setLine(pos * self.time_scale, 0, pos * self.time_scale, 40)
+
+        # Update timer label
+        duration = self.player.duration() / 1000 if self.player.duration() > 0 else 0
+        self.time_label.setText(f"{self.format_time(pos)} / {self.format_time(duration)}")
 
     def eventFilter(self, obj, event):
         """Filters mouse events in the timeline (i.e. clicking on a word block vs clicking on timeline vs dragging on timeline.)"""
@@ -359,9 +372,14 @@ class SubtitleEditor(QWidget):
 
         # Fallback if nothing else
         return super().eventFilter(obj, event)
+    
+    def format_time(self, seconds):
+        """Formats time in 0:00.00 to display video timeline."""
+        m, s = divmod(seconds, 60)
+        return f"{int(m)}:{s:05.2f}"
 
 if __name__ == "__main__":
-    initial_processing(2, 2.0)
+    #initial_processing(2, 2.0)
     # Create application + main window
     app = QApplication(sys.argv)
     editor = SubtitleEditor()
